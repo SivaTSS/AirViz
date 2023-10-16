@@ -6,41 +6,52 @@ import plotly.express as px
 import json
 
 @st.cache_data
-def load_data():
-    data = pd.read_csv("dataset/annual_conc_by_monitor_2022/annual_conc_by_monitor_2022.csv")
+def load_data(filepath):
+    if "parquet" in filepath:
+        data = pd.read_parquet(filepath)
+    elif "csv" in filepath:   
+        data = pd.read_csv(filepath)
+    else:
+        raise Exception("file format not supported")
     return data
 
 st.sidebar.title("EDA Options")
 
-df = load_data()
-df.dropna()
+monthly_df = load_data("dataset/refined/monthly.parquet")
+# coverage_df = load_data()
+# aqi_df = load_data()
+
+# monthly_df.dropna()
 st.title("Air Quality Dataset")
 st.write("""
 The Air Quality dataset is a collection of pollutant data that offers critical insights on concentration of pollutants.
 
 """)
 
-# age_range = st.sidebar.slider("Select Age Range", min_value=int(df['Age'].min()), max_value=int(df['Age'].max()), value=(int(data['Age'].min()), int(data['Age'].max())))
-# gender = st.sidebar.radio("Select Gender", ["All", "Male", "Female"])
-    
+
+region_level = st.sidebar.radio("Select region level", ["State", "County"])
+time_level = st.sidebar.radio("Select time level", ["Yearly", "Monthly"])
+time_range = st.sidebar.slider("Select years interval", min_value=int(monthly_df['Year'].min()), max_value=int(monthly_df['Year'].max()), value=(2000, 2022))
+
+
 # st.header("Data Visualization")
 # filtered_data = df.copy()
 # filtered_data = filtered_data[(filtered_data['Age'] >= age_range[0]) & (filtered_data['Age'] <= age_range[1])]
 # if gender != "All":
 #     filtered_data = filtered_data[filtered_data['Sex'] == ("F" if gender == "Female" else "M")]
 
-st.header("Location of the air quality monitors")
-fig = px.scatter_mapbox(
-    df,  
-    lat="Latitude",  
-    lon="Longitude", 
-    zoom=3  
-)
+# st.header("Location of the air quality monitors")
+# fig = px.scatter_mapbox(
+#     coverage_df,  
+#     lat="Latitude",  
+#     lon="Longitude", 
+#     zoom=3  
+# )
 
-fig.update_layout(mapbox_style="open-street-map")
-fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+# fig.update_layout(mapbox_style="open-street-map")
+# fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
-st.plotly_chart(fig, use_container_width=True)
+# st.plotly_chart(fig, use_container_width=True)
 
 
 st.header("Statewise- Concentration of Ozone")
@@ -48,11 +59,32 @@ st.header("Statewise- Concentration of Ozone")
 with open('geojson/USA_state.geojson', 'r') as geojson_file:
     geojson_data = json.load(geojson_file)
 
-col="99th Percentile" 
+parameters={
+"Ozone":"44201",
+"SO2":"42401",
+"CO":"42101",
+"NO2":"42602",
+"PM2.5 FRM-FEM Mass":"88101",
+"PM2.5 non FRM-FEM Mass":"88502",
+"PM10 Mass":"81102",
+"PMc Mass":"86101", 
+# "PM2.5 Speciation":"SPEC", # not used
+# "PM10 Speciation":"PM10SPEC", # not used
+"Winds":"WIND",
+"Temperature":"TEMP",
+"Barometric Pressure":"PRESS",
+"RH and Dewpoint":"RH_DP",
+# "HAPs":"HAPS", # not used
+# "VOCs":"VOCS", # not used
+# "NONOxNOy":"NONOxNOy", # not used
+"Lead":"LEAD"
+}
+
+col="Ozone-Mean Value" 
 
 custom_agg= lambda x: x.max()
 fig = px.choropleth_mapbox(
-    df.loc[df["Parameter Name"]=="Ozone"].groupby("State Name")[col].agg(**{col: custom_agg}).reset_index(),
+    monthly_df.loc[(monthly_df["Year"]>=time_range[0]) & (monthly_df["Year"]<=time_range[1])].groupby("State Name")[col].agg(**{col: custom_agg}).reset_index(),
     geojson=geojson_data,
     locations='State Name',
     featureidkey="properties.shapeName",  
@@ -64,3 +96,11 @@ fig = px.choropleth_mapbox(
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
+
+
+st.header("Coverage")
+st.header("Pollutant Trends")
+st.header("Parallel cords")
+st.header("AQI-1")
+st.header("AQI-1")
