@@ -2,4 +2,5 @@
 dataset/*
 !dataset/refined/
 dataset/refined/*
-!dataset/refined/monthly.parquet
+!dataset/refined/annual_conc_by_monitor.parquet
+!dataset/refined/annual_aqi_by_county.csv
