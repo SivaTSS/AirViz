@@ -192,14 +192,10 @@ mapbox_layout = {
 }
 
 with tab1:
-    
     col = "Arithmetic Mean"
     custom_agg = lambda x: x.max()
     fig = px.choropleth_mapbox(
-        filtered_df
-        .groupby("State Name")[col]
-        .agg(**{col: custom_agg})
-        .reset_index(),
+        filtered_df.groupby("State Name")[col].agg(**{col: custom_agg}).reset_index(),
         geojson=geojson_data,
         locations="State Name",
         featureidkey="properties.shapeName",
@@ -214,7 +210,6 @@ with tab1:
     st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
-
     fig = px.scatter_mapbox(
         filtered_df,
         lat="Latitude",
@@ -227,25 +222,27 @@ with tab2:
     )
     st.plotly_chart(fig, use_container_width=True)
 
-col1, col2 = st.columns([6,4])
+col1, col2 = st.columns([6, 4])
 
 with col1:
-    year_range = st.slider("Select Year Range", min_value=min(df['Year']), max_value=max(df['Year']), value=(1990, max(df['Year'])))
+    year_range = st.slider(
+        "Select Year Range", min_value=min(df["Year"]), max_value=max(df["Year"]), value=(1990, max(df["Year"]))
+    )
     col3, col4 = st.columns(2)
     with col3:
         with st.expander("Show/Hide Lines"):
-            show_max_line = st.checkbox("Max",value=False)
-            show_mean_line = st.checkbox("Mean",value=True)
-            show_std_deviation = st.checkbox("Std",value=True)
+            show_max_line = st.checkbox("Max", value=False)
+            show_mean_line = st.checkbox("Mean", value=True)
+            show_std_deviation = st.checkbox("Std", value=True)
     with col4:
         with st.expander("Measurement Type"):
             measurement_type = st.radio("", df[df["Parameter Name"] == parameter]["Sample Duration"].unique())
 with col2:
-    state_list=df['State Name'].unique().tolist()+["All"]
+    state_list = df["State Name"].unique().tolist() + ["All"]
     selected_state = st.selectbox("Select State", state_list, index=1)
-    county_list=df[df['State Name'] == selected_state]['County Name'].unique().tolist()+["All"]
+    county_list = df[df["State Name"] == selected_state]["County Name"].unique().tolist() + ["All"]
     selected_county = st.selectbox("Select County", county_list, index=1)
-    
+
 
 fig = go.Figure()
 aggregation = {
@@ -253,31 +250,22 @@ aggregation = {
     f"Arithmetic Standard Dev": "mean",
     f"1st Max Value": "max",
 }
-p_df=df[df["Parameter Name"] == parameter] 
-year_df=p_df[(p_df["Year"] >= year_range[0]) & (p_df["Year"] <= year_range[1])]
-if selected_state=="All":
+p_df = df[df["Parameter Name"] == parameter]
+year_df = p_df[(p_df["Year"] >= year_range[0]) & (p_df["Year"] <= year_range[1])]
+if selected_state == "All":
     filtered_df2 = (
-        year_df[(year_df["Sample Duration"] == measurement_type)]
-        .groupby(["Year"])
-        .agg(aggregation)
-        .reset_index()
+        year_df[(year_df["Sample Duration"] == measurement_type)].groupby(["Year"]).agg(aggregation).reset_index()
     )
-elif selected_county=="All":
-    state_df=year_df[year_df["State Name"] == selected_state]
+elif selected_county == "All":
+    state_df = year_df[year_df["State Name"] == selected_state]
     filtered_df2 = (
-        state_df[(state_df["Sample Duration"] == measurement_type)]
-        .groupby(["Year"])
-        .agg(aggregation)
-        .reset_index()
+        state_df[(state_df["Sample Duration"] == measurement_type)].groupby(["Year"]).agg(aggregation).reset_index()
     )
 else:
-    state_df=year_df[year_df["State Name"] == selected_state]
-    county_df=state_df[state_df["County Name"] == selected_county]
+    state_df = year_df[year_df["State Name"] == selected_state]
+    county_df = state_df[state_df["County Name"] == selected_county]
     filtered_df2 = (
-        county_df[(county_df["Sample Duration"] == measurement_type)]
-        .groupby(["Year"])
-        .agg(aggregation)
-        .reset_index()
+        county_df[(county_df["Sample Duration"] == measurement_type)].groupby(["Year"]).agg(aggregation).reset_index()
     )
 
 if show_std_deviation:
@@ -314,13 +302,15 @@ if show_mean_line:
     )
 
 if show_max_line:
-    fig.add_trace(go.Scatter(
-        x=filtered_df2['Year'],
-        y=filtered_df2[f'1st Max Value'],
-        mode='lines+markers',
-        line=dict(color='rgb(200,0,0)'),
-        name='Max',
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=filtered_df2["Year"],
+            y=filtered_df2[f"1st Max Value"],
+            mode="lines+markers",
+            line=dict(color="rgb(200,0,0)"),
+            name="Max",
+        )
+    )
 
 # Customize the layout
 fig.update_layout(
@@ -368,59 +358,53 @@ st.header("AQI plot")
 aqi_tab1, aqi_tab2 = st.tabs(["Radio", "Heatmap"])
 
 with aqi_tab1:
-
-    col5,col6= st.columns([3,6])
+    col5, col6 = st.columns([3, 6])
     with col5:
         selected_fields = st.multiselect(
             "Select fields to plot:",
             [
-            "Days with AQI",
-            "Good Days",
-            "Moderate Days",
-            "Unhealthy for Sensitive Groups Days",
-            "Unhealthy Days",
-            "Very Unhealthy Days",
-            "Hazardous Days",
-            'Max AQI',
-            '90th Percentile AQI',
-            'Median AQI'
-        ]
-        ,default=[
-            "Days with AQI",
-            "Good Days",
-            "Moderate Days",
-            'Max AQI',
-            '90th Percentile AQI',
-            'Median AQI'            
-        ]
+                "Days with AQI",
+                "Good Days",
+                "Moderate Days",
+                "Unhealthy for Sensitive Groups Days",
+                "Unhealthy Days",
+                "Very Unhealthy Days",
+                "Hazardous Days",
+                "Max AQI",
+                "90th Percentile AQI",
+                "Median AQI",
+            ],
+            default=["Days with AQI", "Good Days", "Moderate Days", "Max AQI", "90th Percentile AQI", "Median AQI"],
         )
-        state_list2=df_aqi['State'].unique().tolist()+["All"]
+        state_list2 = df_aqi["State"].unique().tolist() + ["All"]
         selected_state2 = st.selectbox("Select State", state_list2, index=1, key="state2")
-        county_list2=df_aqi[df_aqi['State'] == selected_state2]['County'].unique().tolist()+["All"]
+        county_list2 = df_aqi[df_aqi["State"] == selected_state2]["County"].unique().tolist() + ["All"]
         selected_county2 = st.selectbox("Select County", county_list2, index=1, key="county2")
     with col6:
-        year_df2=df_aqi[df_aqi["Year"] == year]
-        if selected_state2=="All":
+        year_df2 = df_aqi[df_aqi["Year"] == year]
+        if selected_state2 == "All":
             filtered_df3 = year_df2.groupby("Year")[selected_fields].mean().reset_index()
-        elif selected_county2=="All":
-            state_df2=year_df2[year_df2["State"] == selected_state2]
+        elif selected_county2 == "All":
+            state_df2 = year_df2[year_df2["State"] == selected_state2]
             filtered_df3 = state_df2.groupby("Year")[selected_fields].mean().reset_index()
         else:
-            state_df2=year_df2[year_df2["State"] == selected_state2]
-            county_df2=state_df2[state_df2["County"] == selected_county2]
+            state_df2 = year_df2[year_df2["State"] == selected_state2]
+            county_df2 = state_df2[state_df2["County"] == selected_county2]
             filtered_df3 = county_df2.groupby("Year")[selected_fields].mean().reset_index()
-            
+
         yearly_avg = year_df2.groupby("Year")[selected_fields].mean().reset_index()
 
         fig = px.line_polar(yearly_avg, r=yearly_avg[selected_fields].values[0], theta=selected_fields, line_close=True)
-        fig.update_traces(fill="toself",line=dict(color="green"))
-        fig2 = px.line_polar(filtered_df3, r=filtered_df3[selected_fields].values[0], theta=selected_fields, line_close=True)
+        fig.update_traces(fill="toself", line=dict(color="green"))
+        fig2 = px.line_polar(
+            filtered_df3, r=filtered_df3[selected_fields].values[0], theta=selected_fields, line_close=True
+        )
         fig2.update_traces(fill="toself")
         fig.add_traces(fig2.data)
 
-        if selected_state2=="All":
+        if selected_state2 == "All":
             fig.update_layout(title=f"Air Quality Metrics for USA - {year}")
-        elif selected_county2=="All":
+        elif selected_county2 == "All":
             fig.update_layout(title=f"Air Quality Metrics for {selected_state2} - {year}")
         else:
             fig.update_layout(title=f"Air Quality Metrics for {selected_county2} - {year}")
@@ -428,28 +412,29 @@ with aqi_tab1:
 
 with aqi_tab2:
     with st.expander("Choose attibute to plot"):
-            aqi_measurement_type = st.radio("", ["Days with AQI",
-            "Good Days",
-            "Moderate Days",
-            "Unhealthy for Sensitive Groups Days",
-            "Unhealthy Days",
-            "Very Unhealthy Days",
-            "Hazardous Days",
-            'Max AQI',
-            '90th Percentile AQI',
-            'Median AQI'
-            'Days CO',
-            'Days NO2',
-            'Days Ozone',
-            'Days PM2.5',
-            'Days PM10'
-        ], index=8)
+        aqi_measurement_type = st.radio(
+            "",
+            [
+                "Days with AQI",
+                "Good Days",
+                "Moderate Days",
+                "Unhealthy for Sensitive Groups Days",
+                "Unhealthy Days",
+                "Very Unhealthy Days",
+                "Hazardous Days",
+                "Max AQI",
+                "90th Percentile AQI",
+                "Median AQI" "Days CO",
+                "Days NO2",
+                "Days Ozone",
+                "Days PM2.5",
+                "Days PM10",
+            ],
+            index=8,
+        )
     custom_agg = lambda x: x.max()
     fig = px.choropleth_mapbox(
-        df_aqi
-        .groupby("State")[aqi_measurement_type]
-        .agg(**{aqi_measurement_type: custom_agg})
-        .reset_index(),
+        df_aqi.groupby("State")[aqi_measurement_type].agg(**{aqi_measurement_type: custom_agg}).reset_index(),
         geojson=geojson_data,
         locations="State",
         featureidkey="properties.shapeName",
