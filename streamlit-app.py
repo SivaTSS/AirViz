@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 import hiplot as hip
 
 st.set_page_config(layout="wide")
-
+st.set_option('deprecation.showPyplotGlobalUse', False)
 
 @st.cache_data
 def load_data(filepath):
@@ -37,7 +37,7 @@ The goal of this webapp is to help users understand more about the air we breath
 """
 )
 
-st.header("Importance")
+st.subheader("Introduction")
 
 st.write(
     """
@@ -48,6 +48,7 @@ on human health and the environment.
 
 """
 )
+st.subheader("Learn about Parameters")
 params = [
     "Carbon monoxide",
     "Sulfur dioxide",
@@ -169,17 +170,30 @@ if selected_param:
         st.markdown(table_content)
 
 
-year = st.sidebar.slider("Select a year", min_value=int(df["Year"].min()), max_value=int(df["Year"].max()), value=2021)
+year = st.sidebar.slider("Select a year", min_value=int(df["Year"].min()), max_value=int(df["Year"].max()), value=2020)
 parameter = st.sidebar.selectbox("Select the Parameter to visualize ", params, index=params.index("Ozone"))
 
 
 with open("geojson/USA_state.geojson", "r") as geojson_file:
     geojson_data = json.load(geojson_file)
 
-import streamlit as st
+st.write(
+    """
+   
+    """
+    )
+st.subheader("About the dataset")
+st.write(
+    """
+    The [EPA Air Quality Dataset](https://www.epa.gov/outdoor-air-quality-data) is a valuable resource provided by the United States Environmental Protection Agency (EPA) that offers a comprehensive and detailed record of air quality measurements across the United States.
+    With a wide range of spatial and temporal granularity, the EPA's air quality dataset allows us to track air quality levels over time and across different locations, helping us understand the impact of air pollution on public health and the environment.
+    Whether you're interested in studying long-term trends, assessing the effectiveness of air quality regulations, or simply gaining insights into local air quality, this dataset is an essential tool for making informed decisions and taking action to protect the air we breathe.
+    
+    """
+    )
 
 st.header("Pollutant Trends")
-
+st.subheader("Geospacial Trends")
 # region_level = st.radio("Select region level", ["State", "County"])
 tab1, tab2 = st.tabs(["Concentration", "Coverage"])
 filtered_df = df.loc[(df["Year"] == year) & (df["Parameter Name"] == parameter)]
@@ -189,6 +203,7 @@ mapbox_layout = {
     "style": "carto-positron",
     "center": {"lat": 38.0902, "lon": -95.7129},
     "zoom": 2.6,  # Adjust the zoom level to focus on the same area.
+    
 }
 
 with tab1:
@@ -205,10 +220,17 @@ with tab1:
     fig.update_layout(
         title=f"Concentration of {parameter} - {year}",
         title_font=dict(size=20),
+        margin=dict(b=10),
         mapbox=mapbox_layout,  # Apply the common mapbox layout.
     )
     st.plotly_chart(fig, use_container_width=True)
+    st.write(
+        """
+    A pronounced trend is evident in the case of several pollutants, including Ozone and NO2, with consistently higher levels observed along the western coast, particularly in California's southern regions.
 
+            
+    """
+    )
 with tab2:
     fig = px.scatter_mapbox(
         filtered_df,
@@ -218,15 +240,24 @@ with tab2:
     fig.update_layout(
         title=f"Coverage of centers - {year}",
         title_font=dict(size=20),
+        margin=dict(b=10),
         mapbox=mapbox_layout,  # Apply the common mapbox layout.
     )
     st.plotly_chart(fig, use_container_width=True)
+    st.write(
+        """
+    Adequate coverage of Air Quality measurement centers is of paramount importance as it provides the data needed to monitor and address regional variations in air quality, safeguard public health, protect the environment, inform policy and regulation and establish early warning systems. It also helps in raising public awareness, and facilitates international cooperation in addressing the global challenge of air pollution. Coverage patterns mirror population trends, with a notable concentration along the eastern and western coasts and sparse availability elsewhere, apart from a few isolated hotspots.
 
+            
+    """
+    )
+
+st.subheader("Temporal Trends")
 col1, col2 = st.columns([6, 4])
 
 with col1:
     year_range = st.slider(
-        "Select Year Range", min_value=min(df["Year"]), max_value=max(df["Year"]), value=(1990, max(df["Year"]))
+        "Select Year Range", min_value=min(df["Year"]), max_value=max(df["Year"]), value=(1980, max(df["Year"]))
     )
     col3, col4 = st.columns(2)
     with col3:
@@ -239,9 +270,9 @@ with col1:
             measurement_type = st.radio("Select from below", df[df["Parameter Name"] == parameter]["Sample Duration"].unique())
 with col2:
     state_list = df["State Name"].unique().tolist() + ["All"]
-    selected_state = st.selectbox("Select State", state_list, index=1)
+    selected_state = st.selectbox("Select State", state_list, index=4)
     county_list = df[df["State Name"] == selected_state]["County Name"].unique().tolist() + ["All"]
-    selected_county = st.selectbox("Select County", county_list, index=1)
+    selected_county = st.selectbox("Select County", county_list, index=len(county_list)-1)
 
 
 fig = go.Figure()
@@ -316,15 +347,22 @@ if show_max_line:
 fig.update_layout(
     title=f"{parameter} - Yearly trends(1980-2022)",
     title_font=dict(size=20),
+    margin=dict(b=10),
     xaxis_title="Years",
     yaxis_title="Concentration",
 )
 
 # Show the plot
 st.plotly_chart(fig, use_container_width=True)
-
+st.write(
+        """
+    A conspicuous trend is discernible in the case of several pollutants: a consistent reduction over the years. This decrease can be attributed to a combination of factors, including stricter environmental regulations, technological advancements in emission controls, and heightened public awareness regarding the detrimental effects of pollution.
+            
+    """
+    )
 
 st.header("Air Quality Index(AQI)")
+st.subheader("How is AQI Calculated?")
 st.write(
     """
 The AQI is determined using data on the following pollutants:
@@ -339,6 +377,19 @@ The AQI is calculated for each of these pollutants separately, and the highest o
 """
 )
 
+st.subheader("Air Quality Index (AQI) Categories")
+
+st.write(
+    """
+- **Good (0-50):** Air quality is satisfactory, posing little or no risk to health.
+- **Moderate (51-100):** Air quality is acceptable; however, some pollutants may be a concern for a very small number of individuals who are unusually sensitive to air pollution.
+- **Unhealthy for Sensitive Groups (101-150):** Members of sensitive groups, such as children, the elderly, and individuals with respiratory or heart conditions, may experience health effects. The general public is not likely to be affected.
+- **Unhealthy (151-200):** Everyone may begin to experience health effects; members of sensitive groups may experience more serious health effects.
+- **Very Unhealthy (201-300):** Health alert: everyone may experience more serious health effects.
+- **Hazardous (301-500):** Health warnings of emergency conditions; the entire population is likely to be affected.
+
+""")
+
 with st.expander("**Expore data using parallel coords**"):
     st.write("This content is hidden by default but can be expanded.")
     st.header("Parallel coords")
@@ -352,12 +403,56 @@ with st.expander("**Expore data using parallel coords**"):
     hiplot_html_file = save_hiplot_to_html(exp)
     st.components.v1.html(open(hiplot_html_file, "r").read(), height=1500, scrolling=True)
 
-st.header("AQI plot")
+st.header("Air Quality Metric plots")
 
 
-aqi_tab1, aqi_tab2 = st.tabs(["Radio", "Heatmap"])
+aqi_tab1, aqi_tab2, aqi_tab3 = st.tabs(["Line Plot","Radio", "Heatmap"])
 
 with aqi_tab1:
+    with st.expander("Choose attibute to plot"):
+        aqi_measurement_type = st.radio(
+                "Select from below",
+                [
+                    "Days with AQI",
+                    "Good Days",
+                    "Moderate Days",
+                    "Unhealthy for Sensitive Groups Days",
+                    "Unhealthy Days",
+                    "Very Unhealthy Days",
+                    "Hazardous Days",
+                    "Max AQI",
+                    "90th Percentile AQI",
+                    "Median AQI",
+                    "Days CO",
+                    "Days NO2",
+                    "Days Ozone",
+                    "Days PM2.5",
+                    "Days PM10",
+                ],
+                index=8, key="aqi_mes1"
+            )
+    fig = go.Figure()
+    custom_arg3 = {aqi_measurement_type: lambda x: x.mean()}
+    comb_df = df_aqi.groupby("Year").agg(custom_arg3).reset_index()
+
+    fig.add_trace(
+        go.Scatter(
+            x=comb_df["Year"],
+            y=comb_df[aqi_measurement_type],
+            mode="lines+markers",
+            line=dict(color="rgb(200,0,0)")
+        )
+    )
+    fig.update_layout(
+        title=f"{aqi_measurement_type} - Yearly trends(1980-2022)",
+        title_font=dict(size=20),
+        margin=dict(b=10),
+        xaxis_title="Years",
+        yaxis_title=aqi_measurement_type,
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+with aqi_tab2:
     col5, col6 = st.columns([3, 6])
     with col5:
         selected_fields = st.multiselect(
@@ -410,9 +505,9 @@ with aqi_tab1:
             fig.update_layout(title=f"Air Quality Metrics for {selected_county2} - {year}")
         st.plotly_chart(fig, use_container_width=True)
 
-with aqi_tab2:
+with aqi_tab3:
     with st.expander("Choose attibute to plot"):
-        aqi_measurement_type = st.radio(
+        aqi_measurement_type2 = st.radio(
             "Select from below",
             [
                 "Days with AQI",
@@ -424,26 +519,40 @@ with aqi_tab2:
                 "Hazardous Days",
                 "Max AQI",
                 "90th Percentile AQI",
-                "Median AQI" "Days CO",
+                "Median AQI",
+                "Days CO",
                 "Days NO2",
                 "Days Ozone",
                 "Days PM2.5",
                 "Days PM10",
             ],
-            index=8,
+            index=8, key="aqi_mes2"
         )
-    custom_agg = lambda x: x.max()
+
+    custom_agg2 = lambda x: x.max()
     fig = px.choropleth_mapbox(
-        df_aqi.groupby("State")[aqi_measurement_type].agg(**{aqi_measurement_type: custom_agg}).reset_index(),
+        df_aqi.groupby("State")[aqi_measurement_type2].agg(**{aqi_measurement_type2: custom_agg2}).reset_index(),
         geojson=geojson_data,
         locations="State",
         featureidkey="properties.shapeName",
-        color=aqi_measurement_type,
+        color=aqi_measurement_type2,
         color_continuous_scale="magma",
     )
     fig.update_layout(
-        title=f"{aqi_measurement_type} - {year}",
+        title=f"{aqi_measurement_type2} - {year}",
         title_font=dict(size=20),
         mapbox=mapbox_layout,  # Apply the common mapbox layout.
     )
     st.plotly_chart(fig, use_container_width=True)
+
+
+st.subheader("Conclusion")
+st.write(
+    """
+In conclusion, air quality metrics are crucial tools for assessing and understanding the state of our atmosphere. They provide valuable information about the presence of various air pollutants and help individuals, communities, and policymakers make informed decisions to protect public health and the environment.
+
+By measuring and monitoring parameters such as particulate matter, ground-level ozone, carbon monoxide, sulfur dioxide, and nitrogen dioxide, air quality metrics offer a clear picture of air quality in a specific location. This information empowers us to take appropriate actions, from limiting outdoor activities on days with poor air quality to implementing policies and practices aimed at reducing pollution sources.
+
+As we continue to face environmental challenges and the potential health impacts of air pollution, the use of air quality metrics becomes increasingly important. By staying informed and utilizing this data, we can work toward cleaner air, healthier lives, and a more sustainable future for our planet.
+
+""")
