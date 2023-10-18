@@ -236,7 +236,7 @@ with col1:
             show_std_deviation = st.checkbox("Std", value=True)
     with col4:
         with st.expander("Measurement Type"):
-            measurement_type = st.radio("", df[df["Parameter Name"] == parameter]["Sample Duration"].unique())
+            measurement_type = st.radio("Select from below", df[df["Parameter Name"] == parameter]["Sample Duration"].unique())
 with col2:
     state_list = df["State Name"].unique().tolist() + ["All"]
     selected_state = st.selectbox("Select State", state_list, index=1)
@@ -413,7 +413,7 @@ with aqi_tab1:
 with aqi_tab2:
     with st.expander("Choose attibute to plot"):
         aqi_measurement_type = st.radio(
-            "",
+            "Select from below",
             [
                 "Days with AQI",
                 "Good Days",
