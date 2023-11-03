@@ -36,3 +36,27 @@ params = [
     "Wind Direction - Resultant",
     "Wind Speed - Resultant",
 ]
+
+def add_navigation():
+    st.markdown(
+        """
+        <style>
+            # [data-testid="stSidebarNav"] {
+            #     background-image: "airviz_image.png";
+            #     background-repeat: no-repeat;
+            #     padding-top: 80px;
+            #     background-position: 20px 20px;
+            # }
+            [data-testid="stSidebarNav"]::before {
+                content: "Navigation";
+                margin-left: 20px;
+                margin-top: 20px;
+                margin-bottom: 20px;
+                font-size: 28px;
+                position: relative;
+                top: 100px;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )

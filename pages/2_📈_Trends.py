@@ -7,6 +7,10 @@ import json
 import plotly.graph_objects as go
 import hiplot as hip
 import utils
+from streamlit_extras.app_logo import add_logo
+
+add_logo("airviz_image.png", height=30)
+utils.add_navigation()
 
 def plot_geospacial_trend_concentration(filtered_df, year, parameter, config):
     col = "Arithmetic Mean"
@@ -199,6 +203,7 @@ mapbox_layout = utils.mapbox_layout
 params=utils.params
 
 parameter = st.sidebar.selectbox("Select the Parameter to visualize ", params, index=params.index("Ozone"))
+
 
 config={
     "params":params,
