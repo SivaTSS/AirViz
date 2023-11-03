@@ -6,26 +6,10 @@ import plotly.express as px
 import json
 import plotly.graph_objects as go
 import hiplot as hip
-
+import utils
 
 st.set_page_config(layout="wide")#📊
 st.set_option('deprecation.showPyplotGlobalUse', False)
-
-@st.cache_data
-def load_data(filepath):
-    if "parquet" in filepath:
-        data = pd.read_parquet(filepath)
-    elif "csv" in filepath:
-        data = pd.read_csv(filepath)
-    else:
-        raise Exception("file format not supported")
-    return data
-
-
-
-st.session_state.df = load_data("dataset/refined/annual_conc_by_monitor.parquet")
-st.session_state.df_aqi = load_data("dataset/refined/annual_aqi_by_county.csv")
-
 
 st.title("AirViz")
 st.write(
@@ -48,25 +32,8 @@ on human health and the environment.
 """
 )
 st.subheader("Learn about Parameters")
-params = [
-    "Carbon monoxide",
-    "Sulfur dioxide",
-    "Nitrogen dioxide (NO2)",
-    "Ozone",
-    "PM10 Total 0-10um STP",
-    "PM10-2.5 - Local Conditions",
-    "PM2.5 - Local Conditions",
-    "Acceptable PM2.5 AQI & Speciation Mass",
-    "Lead (TSP) STP",
-    "Barometric pressure",
-    "Relative Humidity ",
-    "Dew Point",
-    "Outdoor Temperature",
-    "Wind Direction - Resultant",
-    "Wind Speed - Resultant",
-]
 
-st.session_state.params = params
+params=utils.params
 
 param_info = {
     "Carbon monoxide": {
@@ -186,16 +153,14 @@ st.write(
     )
 
 
+st.session_state.df = utils.load_data("dataset/refined/annual_conc_by_monitor.parquet")
+st.session_state.df_aqi = utils.load_data("dataset/refined/annual_aqi_by_county.csv")
+
 with open("geojson/USA_state.geojson", "r") as geojson_file:
-    geojson_data = json.load(geojson_file)
+    st.session_state.geojson_data = json.load(geojson_file)
 
-st.session_state.geojson_data = geojson_data
-
-mapbox_layout = {
+st.session_state.mapbox_layout = {
     "style": "carto-positron",
     "center": {"lat": 38.0902, "lon": -95.7129},
     "zoom": 2.6,
-    
 }
-
-st.session_state.mapbox_layout = mapbox_layout

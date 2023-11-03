@@ -6,7 +6,7 @@ import plotly.express as px
 import json
 import plotly.graph_objects as go
 import hiplot as hip
-
+import utils
 
 
 def aqi_intro():
@@ -204,11 +204,21 @@ def plot_airquality_metrics(df_aqi,config):
     with aqi_tab3:
         plot_airquality_heatmap(df_aqi,config)
 
-df_aqi = st.session_state.df_aqi
-params= st.session_state.params
-geojson_data= st.session_state.geojson_data
-mapbox_layout = st.session_state.mapbox_layout
+if 'df_aqi' in st.session_state:
+    df_aqi = st.session_state.df_aqi
+else:    
+    df_aqi = utils.load_data("dataset/refined/annual_aqi_by_county.csv")
+    st.session_state.df_aqi=df_aqi
 
+if 'geojson_data' in st.session_state:
+    geojson_data= st.session_state.geojson_data
+else:
+    with open("geojson/USA_state.geojson", "r") as geojson_file:
+        geojson_data = json.load(geojson_file)
+        st.session_state.geojson_data = geojson_data
+
+mapbox_layout = utils.mapbox_layout
+params=utils.params
 config={
     "params":params,
     "geojson_data":geojson_data,
