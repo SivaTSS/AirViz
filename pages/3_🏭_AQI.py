@@ -213,6 +213,19 @@ config={
     "geojson_data":geojson_data,
     "mapbox_layout":mapbox_layout
 }
+def plot_parallel_coords(df_aqi):
+    with st.expander("**Expore data using parallel coords**"):
+        st.header("Parallel coords")
+        exp = hip.Experiment.from_dataframe(df_aqi[["State","Year","Days CO","Days NO2","Days Ozone","Days PM2.5","Days PM10"]])
 
+        def save_hiplot_to_html(exp):
+            output_file = "hiplot_plot_1.html"
+            exp.to_html(output_file)
+            return output_file
+
+        hiplot_html_file = save_hiplot_to_html(exp)
+        st.components.v1.html(open(hiplot_html_file, "r").read(), height=1500, scrolling=True)
+        
 aqi_intro()
+plot_parallel_coords(df_aqi)
 plot_airquality_metrics(df_aqi,config)
