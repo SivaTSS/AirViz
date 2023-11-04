@@ -45,9 +45,8 @@ def aqi_intro():
 
 def plot_parallel_coords(df_aqi):
     with st.expander("**Expore data using parallel coords**"):
-        st.write("This content is hidden by default but can be expanded.")
         st.header("Parallel coords")
-        exp = hip.Experiment.from_dataframe(df_aqi)
+        exp = hip.Experiment.from_dataframe(df_aqi[["State","Year","Days CO","Days NO2","Days Ozone","Days PM2.5","Days PM10"]])
 
         def save_hiplot_to_html(exp):
             output_file = "hiplot_plot_1.html"

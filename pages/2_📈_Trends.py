@@ -202,7 +202,20 @@ else:
 mapbox_layout = utils.mapbox_layout
 params=utils.params
 
-parameter = st.sidebar.selectbox("Select the Parameter to visualize ", params, index=params.index("Ozone"))
+# Create the selectbox at the bottom half of the sidebar
+parameter = st.sidebar.selectbox("Select the Parameter to visualize", params, index=params.index("Ozone"))
+st.markdown(
+    """
+    <style>
+    .sidebar .element-container:last-child {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 
 config={
