@@ -43,7 +43,7 @@ def conc_dataset_description():
         "Observation Count": "The total count of observations from the monitor.",
         "Observation Percent": "The percentage of observations available from the monitor.",
         "Arithmetic Mean": "The average concentration measured at the monitoring site.",
-        "Arithmetic Standard Deviation": "The standard deviation of the measured concentrations.",
+        "Arithmetic Standard Dev": "The standard deviation of the measured concentrations.",
         "1st Max Value": "The highest observed concentration within the dataset.",
         "99th Percentile": "The concentration value below which 99% of the data falls.",
         "98th Percentile": "The concentration value below which 98% of the data falls.",
@@ -85,7 +85,6 @@ def conc_dataset_plot_missing_values(df,params):
         ax = sns.heatmap(filtered_df.isnull().T, cbar=True, cmap='flare', xticklabels=False, yticklabels=True)
 
         ax.set_xlabel("Data Points")
-        ax.set_ylabel("Features")
         ax.set_title(f"Missing Values Heatmap for {parameter} in {selected_state}")
         cbar = ax.collections[0].colorbar
         cbar.set_ticks([0, 1])
@@ -100,7 +99,7 @@ def conc_dataset_plot_missing_values(df,params):
         
     st.write(
         """
-    There are missing values in the columns Pollutant Standard and Method Name. Both the columns have been ignored in further analysis. There are no missing values in other columns
+    There are missing values in the columns Pollutant Standard and Method Name. Both the columns have been ignored in further analysis. There are no missing values in other columns. It should also be noted that pollutant standard is not applicable for all Parameters(Ex: Wind Speed, Pressure). 
 
     """)
 
@@ -109,7 +108,7 @@ def conc_dataset_plot_yearly_coverage(df,params):
     with col3:
         parameter = st.selectbox("Select the Parameter to visualize ", params, index=params.index("Ozone"),key="tab_conc4")
     with col4:
-        columns=["Observation Count","Observation Percent","Arithmetic Mean","Arithmetic Standard Deviation",
+        columns=["Observation Count","Observation Percent","Arithmetic Mean","Arithmetic Standard Dev",
         "1st Max Value","99th Percentile","98th Percentile","95th Percentile",
         "90th Percentile","75th Percentile","50th Percentile","10th Percentile"]
         numerical_column = st.selectbox("Select a column:", columns, index=8,key="tab_conc4_col4")
@@ -144,7 +143,7 @@ def conc_dataset_plot_statewise_coverage(df,params):
     with col5:
         parameter = st.selectbox("Select the Parameter to visualize ", params, index=params.index("Ozone"),key="tab_conc5")
     with col6:
-        columns=["Observation Count","Observation Percent","Arithmetic Mean","Arithmetic Standard Deviation",
+        columns=["Observation Count","Observation Percent","Arithmetic Mean","Arithmetic Standard Dev",
         "1st Max Value","99th Percentile","98th Percentile","95th Percentile",
         "90th Percentile","75th Percentile","50th Percentile","10th Percentile"]
         numerical_column = st.selectbox("Select a column:", columns, index=8,key="tab_conc4_col5")
@@ -242,7 +241,6 @@ def aqi_dataset_plot_missing_values(df_aqi):
     ax = sns.heatmap(df_aqi.isnull().T, cbar=True, cmap='flare', xticklabels=False, yticklabels=True)
 
     ax.set_xlabel("Data Points")
-    ax.set_ylabel("Features")
     ax.set_title("Missing Values Heatmap")
 
     cbar = ax.collections[0].colorbar
@@ -300,6 +298,19 @@ def aqi_dataset_plot_statewise_coverage(df_aqi):
     plt.close()
     plt.clf()
 
+def plot_parallel_coords(df_aqi):
+    with st.expander("**Expore data using parallel coords**"):
+        st.header("Parallel coords")
+        exp = hip.Experiment.from_dataframe(df_aqi[["State","Year","Days CO","Days NO2","Days Ozone","Days PM2.5","Days PM10"]])
+
+        def save_hiplot_to_html(exp):
+            output_file = "hiplot_plot_1.html"
+            exp.to_html(output_file)
+            return output_file
+
+        hiplot_html_file = save_hiplot_to_html(exp)
+        st.components.v1.html(open(hiplot_html_file, "r").read(), height=1500, scrolling=True)
+
 def perform_eda_of_aqi_dataset(): 
     aqi_dataset_description()
     st.write("""
@@ -321,6 +332,8 @@ def perform_eda_of_aqi_dataset():
 
     with tab_aqi5:
         aqi_dataset_plot_statewise_coverage(df_aqi)
+
+    plot_parallel_coords(df_aqi)
 
 
 
