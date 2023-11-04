@@ -12,6 +12,7 @@ from streamlit_extras.app_logo import add_logo
 add_logo("airviz_image.png", height=30)
 utils.add_navigation()
 
+
 def aqi_intro():
     st.header("Air Quality Index(AQI)")
     st.subheader("How is AQI Calculated?")
@@ -40,42 +41,42 @@ def aqi_intro():
     - **Very Unhealthy (201-300):** Health alert: everyone may experience more serious health effects.
     - **Hazardous (301-500):** Health warnings of emergency conditions; the entire population is likely to be affected.
 
-    """)
+    """
+    )
     return
+
 
 def plot_airquality_lineplot(df_aqi):
     with st.expander("Choose attibute to plot"):
         aqi_measurement_type = st.radio(
-                "Select from below",
-                [
-                    "Days with AQI",
-                    "Good Days",
-                    "Moderate Days",
-                    "Unhealthy for Sensitive Groups Days",
-                    "Unhealthy Days",
-                    "Very Unhealthy Days",
-                    "Hazardous Days",
-                    "Max AQI",
-                    "90th Percentile AQI",
-                    "Median AQI",
-                    "Days CO",
-                    "Days NO2",
-                    "Days Ozone",
-                    "Days PM2.5",
-                    "Days PM10",
-                ],
-                index=8, key="aqi_mes1"
-            )
+            "Select from below",
+            [
+                "Days with AQI",
+                "Good Days",
+                "Moderate Days",
+                "Unhealthy for Sensitive Groups Days",
+                "Unhealthy Days",
+                "Very Unhealthy Days",
+                "Hazardous Days",
+                "Max AQI",
+                "90th Percentile AQI",
+                "Median AQI",
+                "Days CO",
+                "Days NO2",
+                "Days Ozone",
+                "Days PM2.5",
+                "Days PM10",
+            ],
+            index=8,
+            key="aqi_mes1",
+        )
     fig = go.Figure()
     custom_arg = {aqi_measurement_type: lambda x: x.mean()}
     comb_df = df_aqi.groupby("Year").agg(custom_arg).reset_index()
 
     fig.add_trace(
         go.Scatter(
-            x=comb_df["Year"],
-            y=comb_df[aqi_measurement_type],
-            mode="lines+markers",
-            line=dict(color="rgb(200,0,0)")
+            x=comb_df["Year"], y=comb_df[aqi_measurement_type], mode="lines+markers", line=dict(color="rgb(200,0,0)")
         )
     )
     fig.update_layout(
@@ -86,6 +87,7 @@ def plot_airquality_lineplot(df_aqi):
         yaxis_title=aqi_measurement_type,
     )
     st.plotly_chart(fig, use_container_width=True)
+
 
 def plot_airquality_radioplot(df_aqi):
     col1, col2 = st.columns([3, 6])
@@ -111,7 +113,9 @@ def plot_airquality_radioplot(df_aqi):
         county_list = df_aqi[df_aqi["State"] == selected_state]["County"].unique().tolist() + ["All"]
         selected_county = st.selectbox("Select County", county_list, index=1, key="county2")
     with col2:
-        year = st.slider("Select a year", min_value=int(df_aqi["Year"].min()), max_value=int(df_aqi["Year"].max()), value=2020)
+        year = st.slider(
+            "Select a year", min_value=int(df_aqi["Year"].min()), max_value=int(df_aqi["Year"].max()), value=2020
+        )
         year_df = df_aqi[df_aqi["Year"] == year]
         if selected_state == "All":
             filtered_df = year_df.groupby("Year")[selected_fields].mean().reset_index()
@@ -140,9 +144,15 @@ def plot_airquality_radioplot(df_aqi):
             fig.update_layout(title=f"Air Quality Metrics for {selected_county} - {year}")
         st.plotly_chart(fig, use_container_width=True)
 
-def plot_airquality_heatmap(df_aqi,config):
-    
-    year = st.slider("Select a year", min_value=int(df_aqi["Year"].min()), max_value=int(df_aqi["Year"].max()), value=2020, key="year2")
+
+def plot_airquality_heatmap(df_aqi, config):
+    year = st.slider(
+        "Select a year",
+        min_value=int(df_aqi["Year"].min()),
+        max_value=int(df_aqi["Year"].max()),
+        value=2020,
+        key="year2",
+    )
     with st.expander("Choose attibute to plot"):
         aqi_measurement_type2 = st.radio(
             "Select from below",
@@ -163,7 +173,8 @@ def plot_airquality_heatmap(df_aqi,config):
                 "Days PM2.5",
                 "Days PM10",
             ],
-            index=8, key="aqi_mes2"
+            index=8,
+            key="aqi_mes2",
         )
 
     custom_agg2 = lambda x: x.max()
@@ -176,47 +187,47 @@ def plot_airquality_heatmap(df_aqi,config):
         color_continuous_scale="magma",
     )
     fig.update_layout(
-        title=f"{aqi_measurement_type2} - {year}",
-        title_font=dict(size=20),
-        mapbox=config["mapbox_layout"]
+        title=f"{aqi_measurement_type2} - {year}", title_font=dict(size=20), mapbox=config["mapbox_layout"]
     )
     st.plotly_chart(fig, use_container_width=True)
 
-def plot_airquality_metrics(df_aqi,config):
+
+def plot_airquality_metrics(df_aqi, config):
     st.header("Air Quality Metric plots")
-    aqi_tab1, aqi_tab2, aqi_tab3 = st.tabs(["Line Plot","Radio", "Heatmap"])
+    aqi_tab1, aqi_tab2, aqi_tab3 = st.tabs(["Line Plot", "Radio", "Heatmap"])
 
     with aqi_tab1:
         plot_airquality_lineplot(df_aqi)
     with aqi_tab2:
         plot_airquality_radioplot(df_aqi)
     with aqi_tab3:
-        plot_airquality_heatmap(df_aqi,config)
+        plot_airquality_heatmap(df_aqi, config)
 
-if 'df_aqi' in st.session_state:
+
+if "df_aqi" in st.session_state:
     df_aqi = st.session_state.df_aqi
-else:    
+else:
     df_aqi = utils.load_data("dataset/refined/annual_aqi_by_county.csv")
-    st.session_state.df_aqi=df_aqi
+    st.session_state.df_aqi = df_aqi
 
-if 'geojson_data' in st.session_state:
-    geojson_data= st.session_state.geojson_data
+if "geojson_data" in st.session_state:
+    geojson_data = st.session_state.geojson_data
 else:
     with open("geojson/USA_state.geojson", "r") as geojson_file:
         geojson_data = json.load(geojson_file)
         st.session_state.geojson_data = geojson_data
 
 mapbox_layout = utils.mapbox_layout
-params=utils.params
-config={
-    "params":params,
-    "geojson_data":geojson_data,
-    "mapbox_layout":mapbox_layout
-}
+params = utils.params
+config = {"params": params, "geojson_data": geojson_data, "mapbox_layout": mapbox_layout}
+
+
 def plot_parallel_coords(df_aqi):
     with st.expander("**Expore data using parallel coords**"):
         st.header("Parallel coords")
-        exp = hip.Experiment.from_dataframe(df_aqi[["State","Year","Days CO","Days NO2","Days Ozone","Days PM2.5","Days PM10"]])
+        exp = hip.Experiment.from_dataframe(
+            df_aqi[["State", "Year", "Days CO", "Days NO2", "Days Ozone", "Days PM2.5", "Days PM10"]]
+        )
 
         def save_hiplot_to_html(exp):
             output_file = "hiplot_plot_1.html"
@@ -225,7 +236,8 @@ def plot_parallel_coords(df_aqi):
 
         hiplot_html_file = save_hiplot_to_html(exp)
         st.components.v1.html(open(hiplot_html_file, "r").read(), height=1500, scrolling=True)
-        
+
+
 aqi_intro()
 plot_parallel_coords(df_aqi)
-plot_airquality_metrics(df_aqi,config)
+plot_airquality_metrics(df_aqi, config)

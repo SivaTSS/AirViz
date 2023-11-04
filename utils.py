@@ -1,6 +1,6 @@
-
 import streamlit as st
 import pandas as pd
+
 
 @st.cache_data
 def load_data(filepath):
@@ -11,6 +11,7 @@ def load_data(filepath):
     else:
         raise Exception("file format not supported")
     return data
+
 
 mapbox_layout = {
     "style": "carto-positron",
@@ -36,6 +37,7 @@ params = [
     "Wind Direction - Resultant",
     "Wind Speed - Resultant",
 ]
+
 
 def add_navigation():
     st.markdown(

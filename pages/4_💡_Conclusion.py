@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -22,4 +21,5 @@ By measuring and monitoring parameters such as particulate matter, ground-level 
 
 As we continue to face environmental challenges and the potential health impacts of air pollution, the use of air quality metrics becomes increasingly important. By staying informed and utilizing this data, we can work toward cleaner air, healthier lives, and a more sustainable future for our planet.
 
-""")
+"""
+)

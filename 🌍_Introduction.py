@@ -13,7 +13,7 @@ st.set_page_config(layout="wide")
 add_logo("airviz_image.png", height=30)
 utils.add_navigation()
 
-st.set_option('deprecation.showPyplotGlobalUse', False)
+st.set_option("deprecation.showPyplotGlobalUse", False)
 
 st.title("AirViz")
 st.write(
@@ -37,7 +37,7 @@ on human health and the environment.
 )
 st.subheader("Learn about Parameters")
 
-params=utils.params
+params = utils.params
 
 param_info = {
     "Carbon monoxide": {

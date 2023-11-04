@@ -12,6 +12,7 @@ from streamlit_extras.app_logo import add_logo
 add_logo("airviz_image.png", height=30)
 utils.add_navigation()
 
+
 def plot_geospacial_trend_concentration(filtered_df, year, parameter, config):
     col = "Arithmetic Mean"
     custom_agg = lambda x: x.max()
@@ -38,6 +39,7 @@ def plot_geospacial_trend_concentration(filtered_df, year, parameter, config):
     """
     )
 
+
 def plot_geospacial_trend_coverage(filtered_df, year, parameter, config):
     fig = px.scatter_mapbox(
         filtered_df,
@@ -59,6 +61,7 @@ def plot_geospacial_trend_coverage(filtered_df, year, parameter, config):
     """
     )
 
+
 def plot_geospacial_trends(df, parameter, config):
     st.header("Pollutant Trends")
     st.subheader("Geospacial Trends")
@@ -68,11 +71,12 @@ def plot_geospacial_trends(df, parameter, config):
     with tab1:
         plot_geospacial_trend_concentration(filtered_df, year, parameter, config)
     with tab2:
-        plot_geospacial_trend_coverage(filtered_df, year, parameter, config)   
+        plot_geospacial_trend_coverage(filtered_df, year, parameter, config)
+
 
 def get_temporal_trends_inputs(df):
     col1, col2 = st.columns([6, 4])
-    show_lines={}
+    show_lines = {}
     with col1:
         year_range = st.slider(
             "Select Year Range", min_value=min(df["Year"]), max_value=max(df["Year"]), value=(1980, max(df["Year"]))
@@ -85,15 +89,18 @@ def get_temporal_trends_inputs(df):
                 show_lines["Std"] = st.checkbox("Std", value=True)
         with col4:
             with st.expander("Measurement Type"):
-                measurement_type = st.radio("Select from below", df[df["Parameter Name"] == parameter]["Sample Duration"].unique())
+                measurement_type = st.radio(
+                    "Select from below", df[df["Parameter Name"] == parameter]["Sample Duration"].unique()
+                )
     with col2:
         state_list = df["State Name"].unique().tolist() + ["All"]
         selected_state = st.selectbox("Select State", state_list, index=4)
         county_list = df[df["State Name"] == selected_state]["County Name"].unique().tolist() + ["All"]
-        selected_county = st.selectbox("Select County", county_list, index=len(county_list)-1)
-    return show_lines,year_range,measurement_type,selected_state,selected_county
+        selected_county = st.selectbox("Select County", county_list, index=len(county_list) - 1)
+    return show_lines, year_range, measurement_type, selected_state, selected_county
 
-def get_temporal_trends_filtered_df(df,year_range,measurement_type,selected_state,selected_county):
+
+def get_temporal_trends_filtered_df(df, year_range, measurement_type, selected_state, selected_county):
     aggregation = {
         f"Arithmetic Mean": "mean",
         f"Arithmetic Standard Dev": "mean",
@@ -114,14 +121,18 @@ def get_temporal_trends_filtered_df(df,year_range,measurement_type,selected_stat
         state_df = year_df[year_df["State Name"] == selected_state]
         county_df = state_df[state_df["County Name"] == selected_county]
         filtered_df = (
-            county_df[(county_df["Sample Duration"] == measurement_type)].groupby(["Year"]).agg(aggregation).reset_index()
+            county_df[(county_df["Sample Duration"] == measurement_type)]
+            .groupby(["Year"])
+            .agg(aggregation)
+            .reset_index()
         )
     return filtered_df
 
-def plot_temporal_trends(df, parameter): 
+
+def plot_temporal_trends(df, parameter):
     st.subheader("Temporal Trends")
-    show_lines,year_range,measurement_type,selected_state,selected_county=get_temporal_trends_inputs(df)
-    filtered_df=get_temporal_trends_filtered_df(df,year_range,measurement_type,selected_state,selected_county)
+    show_lines, year_range, measurement_type, selected_state, selected_county = get_temporal_trends_inputs(df)
+    filtered_df = get_temporal_trends_filtered_df(df, year_range, measurement_type, selected_state, selected_county)
 
     fig = go.Figure()
     if show_lines["Std"]:
@@ -178,29 +189,28 @@ def plot_temporal_trends(df, parameter):
 
     st.plotly_chart(fig, use_container_width=True)
     st.write(
-            """
+        """
         A conspicuous trend is discernible in the case of several pollutants: a consistent reduction over the years. This decrease can be attributed to a combination of factors, including stricter environmental regulations, technological advancements in emission controls, and heightened public awareness regarding the detrimental effects of pollution.
                 
         """
-        )
-    
+    )
 
 
-if 'df' in st.session_state:
+if "df" in st.session_state:
     df = st.session_state.df
 else:
     df = utils.load_data("dataset/refined/annual_conc_by_monitor.parquet")
-    st.session_state.df=df
+    st.session_state.df = df
 
-if 'geojson_data' in st.session_state:
-    geojson_data= st.session_state.geojson_data
+if "geojson_data" in st.session_state:
+    geojson_data = st.session_state.geojson_data
 else:
     with open("geojson/USA_state.geojson", "r") as geojson_file:
         geojson_data = json.load(geojson_file)
         st.session_state.geojson_data = geojson_data
 
 mapbox_layout = utils.mapbox_layout
-params=utils.params
+params = utils.params
 
 # Create the selectbox at the bottom half of the sidebar
 parameter = st.sidebar.selectbox("Select the Parameter to visualize", params, index=params.index("Ozone"))
@@ -218,14 +228,8 @@ st.markdown(
 )
 
 
-config={
-    "params":params,
-    "geojson_data":geojson_data,
-    "mapbox_layout":mapbox_layout
-}
-    
+config = {"params": params, "geojson_data": geojson_data, "mapbox_layout": mapbox_layout}
+
 plot_geospacial_trends(df, parameter, config)
-    
+
 plot_temporal_trends(df, parameter)
-
-
