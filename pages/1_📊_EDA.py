@@ -79,7 +79,7 @@ def conc_dataset_plot_missing_values(df, params):
     with col1:
         parameter = st.selectbox("Select the Parameter to visualize ", params, index=params.index("Ozone"))
     with col2:
-        state_list = df["State Name"].unique().tolist() + ["All"]
+        state_list = df["State Name"].unique().tolist()
         selected_state = st.selectbox("Select State", state_list, index=4)
 
     filtered_df = df[(df["Parameter Name"] == parameter) & (df["State Name"] == selected_state)]
