@@ -249,7 +249,7 @@ def aqi_dataset_plot_statewise_coverage(df_aqi):
     "Days CO","Days NO2","Days Ozone","Days PM2.5","Days PM10"]
     numerical_column = st.selectbox("Select a column:", columns, index=8,key="tab_aqi5_col6")
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10,8))
     ax=sns.set_style("whitegrid")
     ax=sns.violinplot(data=df_aqi, x=numerical_column, y="State", linewidth=0, palette="rocket")
     ax.set_xlabel(f'{numerical_column} Values')
