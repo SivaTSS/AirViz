@@ -47,29 +47,27 @@ def aqi_intro():
 
 
 def plot_airquality_lineplot(df_aqi):
-    with st.expander("Choose attibute to plot"):
-        aqi_measurement_type = st.radio(
-            "Select from below",
-            [
-                "Days with AQI",
-                "Good Days",
-                "Moderate Days",
-                "Unhealthy for Sensitive Groups Days",
-                "Unhealthy Days",
-                "Very Unhealthy Days",
-                "Hazardous Days",
-                "Max AQI",
-                "90th Percentile AQI",
-                "Median AQI",
-                "Days CO",
-                "Days NO2",
-                "Days Ozone",
-                "Days PM2.5",
-                "Days PM10",
-            ],
-            index=8,
-            key="aqi_mes1",
-        )
+    aqi_measurement_type = st.selectbox("Choose attibute to plot",
+        [
+            "Days with AQI",
+            "Good Days",
+            "Moderate Days",
+            "Unhealthy for Sensitive Groups Days",
+            "Unhealthy Days",
+            "Very Unhealthy Days",
+            "Hazardous Days",
+            "Max AQI",
+            "90th Percentile AQI",
+            "Median AQI",
+            "Days CO",
+            "Days NO2",
+            "Days Ozone",
+            "Days PM2.5",
+            "Days PM10",
+        ],
+        index=8,
+        key="aqi_mes1",
+    )
     fig = go.Figure()
     custom_arg = {aqi_measurement_type: lambda x: x.mean()}
     comb_df = df_aqi.groupby("Year").agg(custom_arg).reset_index()
@@ -146,16 +144,17 @@ def plot_airquality_radioplot(df_aqi):
 
 
 def plot_airquality_heatmap(df_aqi, config):
-    year = st.slider(
-        "Select a year",
-        min_value=int(df_aqi["Year"].min()),
-        max_value=int(df_aqi["Year"].max()),
-        value=2020,
-        key="year2",
-    )
-    with st.expander("Choose attibute to plot"):
-        aqi_measurement_type2 = st.radio(
-            "Select from below",
+    aqicol1,aqicol2=st.columns([6,4])
+    with aqicol1:
+        year = st.slider(
+            "Select a year",
+            min_value=int(df_aqi["Year"].min()),
+            max_value=int(df_aqi["Year"].max()),
+            value=2020,
+            key="year2",
+        )
+    with aqicol2:
+        aqi_measurement_type2 = st.selectbox("Choose attibute to plot",
             [
                 "Days with AQI",
                 "Good Days",
@@ -194,14 +193,15 @@ def plot_airquality_heatmap(df_aqi, config):
 
 def plot_airquality_metrics(df_aqi, config):
     st.header("Air Quality Metric plots")
-    aqi_tab1, aqi_tab2, aqi_tab3 = st.tabs(["Line Plot", "Radio", "Heatmap"])
+    aqi_tab1, aqi_tab2, aqi_tab3 = st.tabs(["Radio", "Heatmap","Line Plot"])
+
 
     with aqi_tab1:
-        plot_airquality_lineplot(df_aqi)
-    with aqi_tab2:
         plot_airquality_radioplot(df_aqi)
-    with aqi_tab3:
+    with aqi_tab2:
         plot_airquality_heatmap(df_aqi, config)
+    with aqi_tab3:
+        plot_airquality_lineplot(df_aqi)
 
 def plot_parallel_coords(df_aqi):
     with st.expander("**Expore data using parallel coords**"):

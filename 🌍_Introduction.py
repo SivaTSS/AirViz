@@ -9,7 +9,6 @@ import hiplot as hip
 import utils
 from streamlit_extras.app_logo import add_logo
 
-st.set_page_config(layout="wide")
 add_logo("airviz_image.png", height=30)
 utils.add_navigation()
 
