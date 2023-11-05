@@ -128,7 +128,7 @@ def plot_airquality_radioplot(df_aqi):
 
         yearly_avg = year_df.groupby("Year")[selected_fields].mean().reset_index()
         fig = px.line_polar(yearly_avg, r=yearly_avg[selected_fields].values[0], theta=selected_fields, line_close=True)
-        fig.update_traces(fill="toself", line=dict(color="green"), showlegend=True, name='Yearly Average')
+        fig.update_traces(fill="toself", line=dict(color="green"), showlegend=True, name='Country Average')
         fig2 = px.line_polar(
             filtered_df, r=filtered_df[selected_fields].values[0], theta=selected_fields, line_close=True
         )
