@@ -71,7 +71,7 @@ def plot_airquality_lineplot(df_aqi):
     )
     fig = go.Figure()
     custom_arg = {aqi_measurement_type: lambda x: x.mean()}
-    comb_df = df_aqi.groupby("Year").agg(custom_arg).reset_index()
+    comb_df = df_aqi[df_aqi["Year"] <= 2021].groupby("Year").agg(custom_arg).reset_index()
 
     fig.add_trace(
         go.Scatter(
@@ -79,7 +79,7 @@ def plot_airquality_lineplot(df_aqi):
         )
     )
     fig.update_layout(
-        title=f"{aqi_measurement_type} - Yearly trends(1980-2022)",
+        title=f"{aqi_measurement_type} - Yearly trends(1980-2021)",
         title_font=dict(size=20),
         margin=dict(b=10),
         xaxis_title="Years",
