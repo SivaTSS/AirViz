@@ -182,7 +182,7 @@ def plot_airquality_heatmap(df_aqi, config):
 
     custom_agg2 = lambda x: x.max()
     fig = px.choropleth_mapbox(
-        df_aqi.groupby("State")[aqi_measurement_type2].agg(**{aqi_measurement_type2: custom_agg2}).reset_index(),
+        df_aqi[df_aqi["Year"] == year].groupby("State")[aqi_measurement_type2].agg(**{aqi_measurement_type2: custom_agg2}).reset_index(),
         geojson=config["geojson_data"],
         locations="State",
         featureidkey="properties.shapeName",
