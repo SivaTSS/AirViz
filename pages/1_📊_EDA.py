@@ -56,16 +56,22 @@ def conc_dataset_description():
         "State Name": "The name of the state where the monitoring site is located.",
         "County Name": "The name of the county where the monitoring site is situated.",
     }
-
-    selected_column = st.selectbox("**Select a column to learn more about**", list(column_explanations.keys()))
-    if selected_column:
-        st.write(column_explanations[selected_column])
+    ecol1,ecol2=st.columns([3, 6])
+    with ecol1:
+        selected_column = st.selectbox("**Select a column to learn more about**", list(column_explanations.keys()),index=3)
+    with ecol2:
+        if selected_column:
+            st.write("\n")
+            st.write("\n")
+            st.write(column_explanations[selected_column])
 
 
 def conc_dataset_plot_corr_heatmap(df, numerical_columns):
     fig, ax = plt.subplots()
-    ax = sns.heatmap(df[numerical_columns].corr(), cmap="coolwarm")
-    st.pyplot(fig)
+    ax = sns.heatmap(df[numerical_columns].corr(), cmap="RdBu", vmin=-1, vmax=1)
+    ax.set_title("Correlation Heatmap")
+    st.pyplot(fig, use_container_width=True)
+
     st.write(
         """
     There is a strong correlation between arithmetic mean and percentiles as expected. There is not much correlation between other columns.
@@ -86,14 +92,14 @@ def conc_dataset_plot_missing_values(df, params):
 
     if filtered_df is not None and not filtered_df.empty:
         fig, ax = plt.subplots()
-        ax = sns.heatmap(filtered_df.isnull().T, cbar=True, cmap="flare", xticklabels=False, yticklabels=True)
+        ax = sns.heatmap(filtered_df.isnull().T, cbar=True, cmap="Purples", vmin=0, vmax=1, xticklabels=False, yticklabels=True)
 
         ax.set_xlabel("Data Points")
         ax.set_title(f"Missing Values Heatmap for {parameter} in {selected_state}")
         cbar = ax.collections[0].colorbar
         cbar.set_ticks([0, 1])
         cbar.set_ticklabels(["Not Missing", "Missing"])
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
     else:
         st.write(
             """
@@ -140,10 +146,10 @@ def conc_dataset_plot_yearly_coverage(df, params):
         ax.lines[0].set_color("violet")
         ax.set_xlabel(f"{numerical_column} Values")
         ax.set_ylabel("Frequency")
-        ax.set_title(f"Histogram of {numerical_column} for {parameter}")
+        ax.set_title(f"Histogram and KDE of {numerical_column} for {parameter}")
 
         ax.grid(True, linestyle="--", alpha=0.3)
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
     else:
         st.write(
             """
@@ -229,23 +235,24 @@ def perform_eda_of_conc_dataset():
     )
     numerical_columns = list(df.select_dtypes(include=np.number).columns.values)
     tab_conc1, tab_conc2, tab_conc3, tab_conc4, tab_conc5 = st.tabs(
-        ["Summary Statistics", "Correlation", "Missing Values", "Histogram", "State-wise"]
+        ["Correlation", "Missing Values", "Histogram", "State-wise", "Summary Statistics"]
     )
-    with tab_conc1:
-        st.table(df.describe())
 
-    with tab_conc2:
+
+    with tab_conc1:
         conc_dataset_plot_corr_heatmap(df, numerical_columns)
 
-    with tab_conc3:
+    with tab_conc2:
         conc_dataset_plot_missing_values(df, params)
 
-    with tab_conc4:
+    with tab_conc3:
         conc_dataset_plot_yearly_coverage(df, params)
 
-    with tab_conc5:
+    with tab_conc4:
         conc_dataset_plot_statewise_coverage(df, params)
 
+    with tab_conc5:
+        st.table(df.describe())
 
 def aqi_dataset_description():
     st.write(
@@ -276,20 +283,25 @@ def aqi_dataset_description():
         "Days PM2.5": "The count of days when fine particulate matter (PM2.5) is a primary pollutant impacting air quality and the AQI.",
         "Days PM10": "The number of days when larger particulate matter (PM10) is a primary pollutant contributing to the AQI.",
     }
-    selected_column = st.selectbox("**Select a column to learn more about**", list(column_explanations.keys()))
-    if selected_column:
-        st.write(column_explanations[selected_column])
+    ecol3,ecol4=st.columns([3, 6])
+    with ecol3:
+        selected_column = st.selectbox("**Select a column to learn more about**", list(column_explanations.keys()),index=3)
+    with ecol4:
+        if selected_column:
+            st.write("\n")
+            st.write(column_explanations[selected_column])
 
 
 def aqi_dataset_plot_corr_heatmap(df_aqi, numerical_columns_aqi):
     fig, ax = plt.subplots()
-    ax = sns.heatmap(df_aqi[numerical_columns_aqi].corr(), cmap="coolwarm")
-    st.pyplot(fig)
+    ax = sns.heatmap(df_aqi[numerical_columns_aqi].corr(), cmap="RdBu", vmin=-1, vmax=1)
+    ax.set_title("Correlation Heatmap")
+    st.pyplot(fig, use_container_width=True)
 
 
 def aqi_dataset_plot_missing_values(df_aqi):
     fig, ax = plt.subplots()
-    ax = sns.heatmap(df_aqi.isnull().T, cbar=True, cmap="flare", xticklabels=False, yticklabels=True)
+    ax = sns.heatmap(df_aqi.isnull().T, cbar=True, cmap="Purples", vmin=0, vmax=1, xticklabels=False, yticklabels=True)
 
     ax.set_xlabel("Data Points")
     ax.set_title("Missing Values Heatmap")
@@ -331,7 +343,7 @@ def aqi_dataset_plot_yearly_coverage(df_aqi):
     ax.lines[0].set_color("violet")
     ax.set_xlabel(f"{numerical_column} Values")
     ax.set_ylabel("Frequency")
-    ax.set_title(f"Histogram of {numerical_column}")
+    ax.set_title(f"Histogram and KDE of {numerical_column}")
 
     ax.grid(True, linestyle="--", alpha=0.3)
     st.pyplot(fig)
@@ -392,23 +404,23 @@ def perform_eda_of_aqi_dataset():
     )
     numerical_columns_aqi = list(df_aqi.select_dtypes(include=np.number).columns.values)
     tab_aqi1, tab_aqi2, tab_aqi3, tab_aqi4, tab_aqi5 = st.tabs(
-        ["Summary Statistics", "Correlation", "Missing Values", "Histogram", "State-wise"]
+        ["Correlation", "Missing Values", "Histogram", "State-wise", "Summary Statistics"]
     )
-    with tab_aqi1:
-        st.table(df_aqi.describe())
 
-    with tab_aqi2:
+    with tab_aqi1:
         aqi_dataset_plot_corr_heatmap(df_aqi, numerical_columns_aqi)
 
-    with tab_aqi3:
+    with tab_aqi2:
         aqi_dataset_plot_missing_values(df_aqi)
 
-    with tab_aqi4:
+    with tab_aqi3:
         aqi_dataset_plot_yearly_coverage(df_aqi)
 
-    with tab_aqi5:
+    with tab_aqi4:
         aqi_dataset_plot_statewise_coverage(df_aqi)
 
+    with tab_aqi5:
+        st.table(df_aqi.describe())
 
 if "df" in st.session_state:
     df = st.session_state.df

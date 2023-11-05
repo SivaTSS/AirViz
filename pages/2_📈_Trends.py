@@ -22,8 +22,9 @@ def plot_geospacial_trend_concentration(filtered_df, year, parameter, config):
         locations="State Name",
         featureidkey="properties.shapeName",
         color=col,
-        color_continuous_scale="magma",
+        color_continuous_scale="reds",
     )
+    
     fig.update_layout(
         title=f"Concentration of {parameter} - {year}",
         title_font=dict(size=20),
@@ -45,13 +46,16 @@ def plot_geospacial_trend_coverage(filtered_df, year, parameter, config):
         filtered_df,
         lat="Latitude",
         lon="Longitude",
+        opacity=0.4,
+        color_discrete_sequence=["purple"]
     )
     fig.update_layout(
-        title=f"Coverage of centers - {year}",
+        title=f"Coverage of {parameter} measurement centers - {year}",
         title_font=dict(size=20),
         margin=dict(b=10),
         mapbox=config["mapbox_layout"],
     )
+    
     st.plotly_chart(fig, use_container_width=True)
     st.write(
         """
