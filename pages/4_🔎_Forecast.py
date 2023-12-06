@@ -121,87 +121,94 @@ original_df = pd.DataFrame(filtered_df)
 temp_df = original_df.rename(columns={'Year': 'ds', 'Arithmetic Mean': 'y'})
 temp_df['ds'] = pd.to_datetime(temp_df['ds'].astype(str) + '-12-31')
 
-if model_type=="Prophet":
-    model = Prophet()
-    model.fit(temp_df)
-
-    # Create a DataFrame with future dates for prediction
-    future = model.make_future_dataframe(periods=pred_year, freq='Y')  # Forecast for the next 5 years
-    forecast = model.predict(future).tail(pred_year)
-
-    # Ensure predicted values do not go below zero
-    forecast['yhat'] = forecast['yhat'].clip(lower=0)
-    forecast['yhat_lower'] = forecast['yhat_lower'].clip(lower=0)
-    forecast['yhat_upper'] = forecast['yhat_upper'].clip(lower=0)
-
-    # Create a Plotly figure
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=temp_df['ds'], y=temp_df['y'], mode='markers+lines', name='Actual', marker=dict(color='blue')))
-    fig.add_trace(go.Scatter(
-        x=pd.concat([forecast['ds'], forecast['ds'][::-1]]),
-        y=pd.concat([forecast['yhat_upper'], forecast['yhat_lower'][::-1]]),
-        fill='toself',
-        fillcolor='rgba(255, 165, 0, 0.2)',
-        line=dict(color='rgba(255, 255, 255, 0)'),
-        name='Uncertainty Band'
-    ))
-    fig.add_trace(go.Scatter(x=forecast['ds'], y=forecast['yhat'], mode='markers+lines', name='Prophet Forecast', line=dict(dash='dash', color='orange')))
-
-
-    # Update layout
-    fig.update_layout(
-        title=f'{model_type} Forecasting for {parameter} from {year_range[0]} to {year_range[1]}',
-        xaxis=dict(title='Year'),
-        yaxis=dict(title=f'{parameter}'),
-        legend=dict(x=1, y=1, traceorder='normal', orientation='v')
+if temp_df['ds'] is None or len(temp_df['ds'])<2:
+    st.write(
+    """
+    There are less than 2 data points in the given range. Please choose a different option
+    """
     )
+else:
+    if model_type=="Prophet":
+        model = Prophet()
+        model.fit(temp_df)
+
+        # Create a DataFrame with future dates for prediction
+        future = model.make_future_dataframe(periods=pred_year, freq='Y')  # Forecast for the next 5 years
+        forecast = model.predict(future).tail(pred_year)
+
+        # Ensure predicted values do not go below zero
+        forecast['yhat'] = forecast['yhat'].clip(lower=0)
+        forecast['yhat_lower'] = forecast['yhat_lower'].clip(lower=0)
+        forecast['yhat_upper'] = forecast['yhat_upper'].clip(lower=0)
+
+        # Create a Plotly figure
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=temp_df['ds'], y=temp_df['y'], mode='markers+lines', name='Actual', marker=dict(color='blue')))
+        fig.add_trace(go.Scatter(
+            x=pd.concat([forecast['ds'], forecast['ds'][::-1]]),
+            y=pd.concat([forecast['yhat_upper'], forecast['yhat_lower'][::-1]]),
+            fill='toself',
+            fillcolor='rgba(255, 165, 0, 0.2)',
+            line=dict(color='rgba(255, 255, 255, 0)'),
+            name='Uncertainty Band'
+        ))
+        fig.add_trace(go.Scatter(x=forecast['ds'], y=forecast['yhat'], mode='markers+lines', name='Prophet Forecast', line=dict(dash='dash', color='orange')))
 
 
-    st.plotly_chart(fig, use_container_width=True)
+        # Update layout
+        fig.update_layout(
+            title=f'{model_type} Forecasting for {parameter} from {year_range[1]} to {str(year_range[1]+pred_year)}',
+            xaxis=dict(title='Year'),
+            yaxis=dict(title=f'{parameter}'),
+            legend=dict(x=1, y=1, traceorder='normal', orientation='v')
+        )
 
 
-if model_type=="Arima":
-    order = (1, 1, 1)  # You may need to choose appropriate values for the order parameter
-    model_arima = ARIMA(temp_df['y'], order=order)
-    results = model_arima.fit()
+        st.plotly_chart(fig, use_container_width=True)
 
-    # Forecast for the next 5 years with a smaller uncertainty band
-    forecast_steps = pred_year
-    forecast_arima = results.get_forecast(steps=forecast_steps)
-    forecast_mean = forecast_arima.predicted_mean.values
-    forecast_std = forecast_arima.se_mean.values  # Standard error
 
-    # Ensure predicted values do not go below zero
-    forecast_mean = np.maximum(forecast_mean, 0)
-    confidence_interval_multiplier = 1.0  # Adjust this multiplier for the desired uncertainty band size
-    forecast_upper = np.maximum(forecast_mean + confidence_interval_multiplier * forecast_std, 0)
-    forecast_lower = np.maximum(forecast_mean - confidence_interval_multiplier * forecast_std, 0)
+    if model_type=="Arima":
+        order = (1, 1, 1)  # You may need to choose appropriate values for the order parameter
+        model_arima = ARIMA(temp_df['y'], order=order)
+        results = model_arima.fit()
 
-    future_dates = pd.date_range(start=temp_df['ds'].max(), periods=forecast_steps + 1, freq='Y')[1:]
-    forecast_df_arima = pd.DataFrame({'ds': future_dates, 'yhat': forecast_mean, 'yhat_upper': forecast_upper, 'yhat_lower': forecast_lower})
+        # Forecast for the next 5 years with a smaller uncertainty band
+        forecast_steps = pred_year
+        forecast_arima = results.get_forecast(steps=forecast_steps)
+        forecast_mean = forecast_arima.predicted_mean.values
+        forecast_std = forecast_arima.se_mean.values  # Standard error
 
-    fig = go.Figure()
+        # Ensure predicted values do not go below zero
+        forecast_mean = np.maximum(forecast_mean, 0)
+        confidence_interval_multiplier = 1.0  # Adjust this multiplier for the desired uncertainty band size
+        forecast_upper = np.maximum(forecast_mean + confidence_interval_multiplier * forecast_std, 0)
+        forecast_lower = np.maximum(forecast_mean - confidence_interval_multiplier * forecast_std, 0)
 
-    fig.add_trace(go.Scatter(x=temp_df['ds'], y=temp_df['y'], mode='markers+lines', name='Actual', marker=dict(color='blue')))
-    fig.add_trace(go.Scatter(
-        x=pd.concat([forecast_df_arima['ds'], forecast_df_arima['ds'][::-1]]),
-        y=pd.concat([forecast_df_arima['yhat_upper'], forecast_df_arima['yhat_lower'][::-1]]),
-        fill='toself',
-        fillcolor='rgba(255, 165, 0, 0.2)',
-        line=dict(color='rgba(255, 255, 255, 0)'),
-        name='Uncertainty Band'
-    ))
-    fig.add_trace(go.Scatter(x=forecast_df_arima['ds'], y=forecast_df_arima['yhat'], mode='markers+lines', name='ARIMA Forecast', line=dict(dash='dash', color='orange')))
+        future_dates = pd.date_range(start=temp_df['ds'].max(), periods=forecast_steps + 1, freq='Y')[1:]
+        forecast_df_arima = pd.DataFrame({'ds': future_dates, 'yhat': forecast_mean, 'yhat_upper': forecast_upper, 'yhat_lower': forecast_lower})
 
-    fig.update_layout(
-        title=f'{model_type} Forecasting for {parameter} from {year_range[0]} to {year_range[1]}',
-        xaxis=dict(title='Year'),
-        yaxis=dict(title=f'{parameter}'),
-        legend=dict(x=1, y=1, traceorder='normal', orientation='v')
-    )
+        fig = go.Figure()
 
-    # Show the plot
-    st.plotly_chart(fig, use_container_width=True)
+        fig.add_trace(go.Scatter(x=temp_df['ds'], y=temp_df['y'], mode='markers+lines', name='Actual', marker=dict(color='blue')))
+        fig.add_trace(go.Scatter(
+            x=pd.concat([forecast_df_arima['ds'], forecast_df_arima['ds'][::-1]]),
+            y=pd.concat([forecast_df_arima['yhat_upper'], forecast_df_arima['yhat_lower'][::-1]]),
+            fill='toself',
+            fillcolor='rgba(255, 165, 0, 0.2)',
+            line=dict(color='rgba(255, 255, 255, 0)'),
+            name='Uncertainty Band'
+        ))
+        fig.add_trace(go.Scatter(x=forecast_df_arima['ds'], y=forecast_df_arima['yhat'], mode='markers+lines', name='ARIMA Forecast', line=dict(dash='dash', color='orange')))
+
+        fig.update_layout(
+            title=f'{model_type} Forecasting for {parameter} from {year_range[1]} to {str(year_range[1]+pred_year)}',
+            xaxis=dict(title='Year'),
+            yaxis=dict(title=f'{parameter}'),
+            legend=dict(x=1, y=1, traceorder='normal', orientation='v')
+        )
+
+        # Show the plot
+        st.plotly_chart(fig, use_container_width=True)
 
 
 st.write(
