@@ -38,9 +38,9 @@ def train_and_evaluate_model(df_aqi):
     modelcol1,modelcol2=st.columns([4,3])
     with modelcol1:
         model_type = st.selectbox("Choose model",
-                [
-                    "XGBoost Regressor",
+                [   
                     "Linear Regressor",
+                    "XGBoost Regressor",
                     "Lasso Regressor",
                     "Ridge Regressor",
                     "Support Vector Regressor"
