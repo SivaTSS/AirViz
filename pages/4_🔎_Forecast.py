@@ -12,7 +12,7 @@ from prophet import Prophet
 from statsmodels.tsa.arima.model import ARIMA
 import numpy as np
 import warnings
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -132,19 +132,19 @@ def get_options_for_forecasting(df,params):
                 ],
                 index=0
             )
-        state_list = df["State Name"].unique().tolist() + ["All"]
-        selected_state = st.selectbox("Select State", state_list, index=4)
+        state_list = ["All"] +df["State Name"].unique().tolist()
+        selected_state = st.selectbox("Select State", state_list, index=5)
 
     with forepolcol2:
         ignored_params=["Barometric pressure", "Relative Humidity ", "Dew Point", "Outdoor Temperature", "Wind Direction - Resultant", "Wind Speed - Resultant"]
         relevant_params= [param for param in params if param not in ignored_params]
         parameter = st.selectbox("Select the Parameter to visualize", relevant_params, index=params.index("Ozone"))
-        county_list = df[df["State Name"] == selected_state]["County Name"].unique().tolist() + ["All"]
-        selected_county = st.selectbox("Select County", county_list, index=len(county_list) - 1)
+        county_list = ["All"]+ df[df["State Name"] == selected_state]["County Name"].unique().tolist()
+        selected_county = st.selectbox("Select County", county_list, index=0)
         
     with forepolcol3:  
         year_range = st.slider(
-                "Select a years to consider for training data",
+                "Select years to consider for training data",
                 min_value=int(df["Year"].min()),
                 max_value=int(2021),
                 value=[1985,2015],
@@ -190,6 +190,30 @@ def extract_filtered_df(df,parameter,year_range,selected_state, selected_county)
         )
     return filtered_df
 
+def estimate_and_print_metrics(actual_values,predicted_values):
+
+    min_length = min(len(actual_values), len(predicted_values))
+
+    if min_length>=1:
+        # Trim the arrays to the minimum length
+        actual_values = actual_values[:min_length]
+        predicted_values = predicted_values[:min_length]
+        # Calculate RMSE
+        rmse = np.sqrt(mean_squared_error(actual_values, predicted_values))
+        range_y = np.max(actual_values) - np.min(actual_values)
+        nrmse = rmse / range_y if range_y > 0 else 0
+
+        mape = np.mean(np.abs((actual_values - predicted_values) / actual_values)) * 100
+        st.write(
+            f"""
+            ##### Model Metrics
+
+            Normalized RMSE (NRMSE):  **{round(nrmse, 4)}**
+
+            Mean Absolute Percentage Error (MAPE):  **{round(mape, 4)}%**
+            """)
+
+
 def forecast_and_plot_using_prophet(temp_df,model_type,parameter,year_range,pred_year):
     model = Prophet(changepoint_prior_scale=0.1)
     training_data=temp_df[temp_df['ds'].dt.year <= year_range[1]]
@@ -232,18 +256,7 @@ def forecast_and_plot_using_prophet(temp_df,model_type,parameter,year_range,pred
     st.plotly_chart(fig, use_container_width=True)
     actual_values = testing_data['y'].values
     predicted_values = forecast['yhat'].values
-    min_length = min(len(actual_values), len(predicted_values))
-
-    # Trim the arrays to the minimum length
-    actual_values = actual_values[:min_length]
-    predicted_values = predicted_values[:min_length]
-    # Calculate RMSE
-    rmse = np.sqrt(mean_squared_error(actual_values, predicted_values))
-    st.write(
-        f"""
-        ##### Model Metrics
-        Root Mean Squared Error (RMSE):  **{str(round(rmse,4))}**    
-        """)
+    estimate_and_print_metrics(actual_values,predicted_values)
 
 
 def forecast_and_plot_using_arima(temp_df,model_type,parameter,year_range,pred_year):
@@ -294,19 +307,7 @@ def forecast_and_plot_using_arima(temp_df,model_type,parameter,year_range,pred_y
     st.plotly_chart(fig, use_container_width=True)
     actual_values = testing_data['y'].values
     predicted_values = forecast_df_arima['yhat'].values
-    # Choose the minimum length of the two arrays
-    min_length = min(len(actual_values), len(predicted_values))
-
-    # Trim the arrays to the minimum length
-    actual_values = actual_values[:min_length]
-    predicted_values = predicted_values[:min_length]
-    # Calculate RMSE
-    rmse = np.sqrt(mean_squared_error(actual_values, predicted_values))
-    st.write(
-        f"""
-        ##### Model Metrics
-        Root Mean Squared Error (RMSE):  **{str(round(rmse,4))}**      
-        """)
+    estimate_and_print_metrics(actual_values,predicted_values)
 
 def forecast_pollutant_trends(df, params):
     model_type, parameter, year_range, pred_year, selected_state, selected_county=get_options_for_forecasting(df, params)
@@ -329,7 +330,15 @@ def forecast_pollutant_trends(df, params):
 
         if model_type=="Arima":
             forecast_and_plot_using_arima(temp_df,model_type,parameter,year_range,pred_year)
-
+    show_metrics_info = st.checkbox('Learn about mertics used', key="metrics_")
+    if show_metrics_info:
+        st.write(
+            """
+            - **RMSE:** Measures the average prediction error. Lower values indicate better accuracy.
+            - **Normalized RMSE:** RMSE normalized by the range of the target variable. Useful for comparing models across different scales.
+            - **MAPE:** Measures the average percentage difference between predicted and actual values. Lower values indicate better accuracy.
+            """
+        )
     write_explainations(parameter)
 
 def get_options_for_forecasting_aqi(df_aqi):
@@ -344,8 +353,8 @@ def get_options_for_forecasting_aqi(df_aqi):
                 index=0,
                 key="model_aqi"
             )
-        state_list = df_aqi["State"].unique().tolist() + ["All"]
-        selected_state = st.selectbox("Select State", state_list, index=1, key="state_aqi")
+        state_list = ["All"]+ df_aqi["State"].unique().tolist()
+        selected_state = st.selectbox("Select State", state_list, index=2, key="state_aqi")
 
     with foreaqicol2:
         parameter = st.selectbox("Select the Parameter to visualize", ["Max AQI","Median AQI"], index=1)
@@ -354,7 +363,7 @@ def get_options_for_forecasting_aqi(df_aqi):
         
     with foreaqicol3:  
         year_range = st.slider(
-                "Select a years to consider for training data",
+                "Select years to consider for training data",
                 min_value=int(df["Year"].min()),
                 max_value=int(2021),
                 value=[1985,2015],
@@ -436,18 +445,7 @@ def forecast_and_plot_aqi_using_prophet(temp_df_aqi,model_type,parameter,year_ra
 
     actual_values = testing_data['y'].values
     predicted_values = forecast['yhat'].values
-    min_length = min(len(actual_values), len(predicted_values))
-
-    # Trim the arrays to the minimum length
-    actual_values = actual_values[:min_length]
-    predicted_values = predicted_values[:min_length]
-    # Calculate RMSE
-    rmse = np.sqrt(mean_squared_error(actual_values, predicted_values))
-    st.write(
-        f"""
-        ##### Model Metrics
-        Root Mean Squared Error (RMSE):  **{str(round(rmse,4))}**      
-        """)
+    estimate_and_print_metrics(actual_values,predicted_values)
     
 def forecast_and_plot_aqi_using_arima(temp_df_aqi,model_type,parameter,year_range,pred_year):
     training_data=temp_df_aqi[temp_df_aqi['ds'].dt.year <= year_range[1]]
@@ -497,19 +495,8 @@ def forecast_and_plot_aqi_using_arima(temp_df_aqi,model_type,parameter,year_rang
 
     actual_values = testing_data['y'].values
     predicted_values = forecast_df_arima['yhat'].values
-    # Choose the minimum length of the two arrays
-    min_length = min(len(actual_values), len(predicted_values))
+    estimate_and_print_metrics(actual_values,predicted_values)
 
-    # Trim the arrays to the minimum length
-    actual_values = actual_values[:min_length]
-    predicted_values = predicted_values[:min_length]
-    # Calculate RMSE
-    rmse = np.sqrt(mean_squared_error(actual_values, predicted_values))
-    st.write(
-        f"""
-        ##### Model Metrics
-        Root Mean Squared Error (RMSE):  **{str(round(rmse,4))}**      
-        """)
 def forecast_aqi_trends(df_aqi):
     model_type, parameter, year_range, pred_year, selected_state, selected_county=get_options_for_forecasting_aqi(df_aqi)
     filtered_df = extract_filtered_df_aqi(df_aqi,year_range,selected_state, selected_county)
@@ -520,7 +507,7 @@ def forecast_aqi_trends(df_aqi):
     temp_df_aqi = original_df.rename(columns={'Year': 'ds', f"{parameter}": 'y'})
     temp_df_aqi['ds'] = pd.to_datetime(temp_df_aqi['ds'].astype(str) + '-12-31')
 
-    if temp_df_aqi['ds'] is None or len(temp_df_aqi['ds'])<2:
+    if temp_df_aqi['ds'] is None or len(temp_df_aqi[temp_df_aqi['ds'].dt.year <= year_range[1]]['ds'])<2:
         st.write(
         """
         There are less than 2 data points in the given range. Please choose a different option
@@ -533,6 +520,15 @@ def forecast_aqi_trends(df_aqi):
         if model_type=="Arima":
             forecast_and_plot_aqi_using_arima(temp_df_aqi,model_type,parameter,year_range,pred_year)
 
+    show_metrics_info = st.checkbox('Learn about mertics used', key="metrics_aqi")
+    if show_metrics_info:
+        st.write(
+            """
+            - **RMSE:** Measures the average prediction error. Lower values indicate better accuracy.
+            - **Normalized RMSE:** RMSE normalized by the range of the target variable. Useful for comparing models across different scales.
+            - **MAPE:** Measures the average percentage difference between predicted and actual values. Lower values indicate better accuracy.
+            """
+        )
     st.write(
         """
     #### Impact and significance:
