@@ -16,8 +16,6 @@ from sklearn.linear_model import LinearRegression, Lasso, Ridge
 from xgboost import XGBRegressor
 from sklearn.svm import SVR
 from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.neural_network import MLPRegressor
 
 
 add_logo("airviz_image.png", height=30)

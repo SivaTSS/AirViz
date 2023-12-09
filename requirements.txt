@@ -8,3 +8,4 @@ numpy==1.26.1
 streamlit_extras==0.3.5
 prophet==1.1.5
 statsmodels==0.14.0
+xgboost==2.0.2
