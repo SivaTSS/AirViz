@@ -25,12 +25,16 @@ def write_intro():
     st.header("Predict AQI")
     st.write(
         """
-    In our evolving world, predicting Air Quality Index (AQI) has become imperative for safeguarding public health and the environment. As we grapple with the consequences of urbanization and industrialization, understanding and anticipating AQI fluctuations is crucial. This proactive approach, fueled by advanced technologies and collaborative efforts, empowers us to take informed measures, ensuring a cleaner, healthier future for all."""
-    )
+    In our ever-changing world, predicting the Air Quality Index (AQI) has become essential to safeguard public health and the environment. As we contend with the impacts of urbanization and industrialization, it's crucial to comprehend and anticipate fluctuations in AQI. Taking a proactive stance, driven by advanced technologies and collaborative efforts, enables us to make informed decisions. This approach ensures that we can implement measures effectively, contributing to a cleaner and healthier future for everyone.
+    
+    """)
 
 def train_and_evaluate_model(df_aqi):
-    st.subheader("Train Model")
-
+    st.subheader("Model Builder")
+    st.write(
+        f"""
+    This section of the application serves as a tool to construct a model and assess its performance.
+    """)
     modelcol1,modelcol2=st.columns([4,3])
     with modelcol1:
         model_type = st.selectbox("Choose model",
@@ -91,26 +95,50 @@ def train_and_evaluate_model(df_aqi):
     predictions = model.predict(X_test)
     rmse = np.sqrt(mean_squared_error(y_test, predictions))
     r2 = r2_score(y_test, predictions)
+    norm_rmse = rmse / (np.max(y_test) - np.min(y_test))
 
+    # Display metrics
     st.write(
         f"""
         ##### Model Metrics
-        Root Mean Squared Error (RMSE): **{str(round(rmse,4))}**, R-squared: **{str(round(r2,4))}**
-        """)
+
+        Normalized RMSE: **{str(round(norm_rmse, 4))}**
+
+        R-squared: **{str(round(r2, 4))}**
+        """
+    )
+    show_metrics_info = st.checkbox('Learn about mertics used')
+    if show_metrics_info:
+        st.write(
+            """
+            - **RMSE:** Measures the average prediction error. Lower values indicate better accuracy.
+            - **Normalized RMSE:** RMSE normalized by the range of the target variable. Useful for comparing models across different scales.
+            - **R-squared (R²):** Represents the proportion of variance in the dependent variable explained by the model. Closer to 1 is better.
+            """
+        )
+    st.write(
+        """ 
+        Even thought the R-square is low for the above models, it is able to approximately grasp the general trend of AQI.
+        """
+        )   
     return model
 
 def predict_on_new_data(model,df_aqi):
     st.subheader("Precict AQI on custom data")
+    st.write(
+        f"""
+    The below fields are prefilled with average values in USA. Try out different values for your location and get to know the Median AQI.
+    """)
     predcol1,predcol2,predcol3=st.columns(3)
 
     with predcol1:
-        days_co = st.number_input("Days CO", min_value=0, max_value=365, value=int(np.mean(df_aqi["Days CO"])), step=5)
-        days_no2 = st.number_input("Days NO2", min_value=0, max_value=365, value=int(np.mean(df_aqi["Days NO2"])), step=5)
+        days_co = st.number_input("Days of excess CO", min_value=0, max_value=365, value=int(np.mean(df_aqi["Days CO"])), step=5)
+        days_no2 = st.number_input("Days of excess NO2", min_value=0, max_value=365, value=int(np.mean(df_aqi["Days NO2"])), step=5)
     with predcol2:
-        days_ozone = st.number_input("Days Ozone", min_value=0, max_value=365, value=int(np.mean(df_aqi["Days Ozone"])), step=5)
-        days_pm25 = st.number_input("Days PM2.5", min_value=0, max_value=365, value=int(np.mean(df_aqi["Days PM2.5"])), step=5)
+        days_ozone = st.number_input("Days of excess Ozone", min_value=0, max_value=365, value=int(np.mean(df_aqi["Days Ozone"])), step=5)
+        days_pm25 = st.number_input("Days of excess PM2.5", min_value=0, max_value=365, value=int(np.mean(df_aqi["Days PM2.5"])), step=5)
     with predcol3:
-        days_pm10 = st.number_input("Days PM10", min_value=0, max_value=365, value=int(np.mean(df_aqi["Days PM10"])), step=5)
+        days_pm10 = st.number_input("Days of excess PM10", min_value=0, max_value=365, value=int(np.mean(df_aqi["Days PM10"])), step=5)
 
     # Create a DataFrame with user input
     new_data = pd.DataFrame({
@@ -123,11 +151,35 @@ def predict_on_new_data(model,df_aqi):
     })
 
     new_predictions = model.predict(new_data)
-
-    st.write(
-        f"""
-    The Median AQI for the given values is **{str(round(new_predictions[0],4))}**
-    """)
+    if new_predictions[0]<50:
+        st.markdown(
+            f"""
+            ##### <span style="color: green;">The Median AQI for the given values is **{str(round(new_predictions[0], 4))}**. The air quality is good most of the days.</span>
+            """,
+            unsafe_allow_html=True
+        )
+    elif new_predictions[0]<100:
+        st.write(
+            f"""
+            ##### <span style="color: orange;">The Median AQI for the given values is **{str(round(new_predictions[0], 4))}**. The air quality is moderate most of the days.</span>
+        """,
+            unsafe_allow_html=True
+        )
+    elif new_predictions[0]<150:
+        st.write(
+            f"""
+            ##### <span style="color: red;">The Median AQI for the given values is **{str(round(new_predictions[0], 4))}**. The air quality is Unhealthy for Sensitive Groups most of the days.</span>
+        """,
+            unsafe_allow_html=True
+        )   
+    else:
+        st.write(
+            f"""
+            ##### <span style="color: brown;">The Median AQI for the given values is **{str(round(new_predictions[0], 4))}**. The air quality is Unhealthy most of the days.</span>
+        """,
+            unsafe_allow_html=True
+        )   
+    
 
 def train_and_predict_model_for_aqi(df_aqi):
 
