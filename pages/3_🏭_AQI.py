@@ -48,7 +48,8 @@ def aqi_intro():
 
 
 def plot_airquality_lineplot(df_aqi):
-    aqi_measurement_type = st.selectbox("Choose attibute to plot",
+    aqi_measurement_type = st.selectbox(
+        "Choose attibute to plot",
         [
             "Days with AQI",
             "Good Days",
@@ -128,11 +129,11 @@ def plot_airquality_radioplot(df_aqi):
 
         yearly_avg = year_df.groupby("Year")[selected_fields].mean().reset_index()
         fig = px.line_polar(yearly_avg, r=yearly_avg[selected_fields].values[0], theta=selected_fields, line_close=True)
-        fig.update_traces(fill="toself", line=dict(color="green"), showlegend=True, name='Country Average')
+        fig.update_traces(fill="toself", line=dict(color="green"), showlegend=True, name="Country Average")
         fig2 = px.line_polar(
             filtered_df, r=filtered_df[selected_fields].values[0], theta=selected_fields, line_close=True
         )
-        fig2.update_traces(fill="toself", showlegend=True, name='Filtered Data')
+        fig2.update_traces(fill="toself", showlegend=True, name="Filtered Data")
         fig.add_traces(fig2.data)
 
         if selected_state == "All":
@@ -141,14 +142,14 @@ def plot_airquality_radioplot(df_aqi):
             fig.update_layout(title=f"Air Quality Metrics for {selected_state} - {year}")
         else:
             fig.update_layout(title=f"Air Quality Metrics for {selected_county} - {year}")
-        fig.update_layout(legend=dict(x=0,y=1))
+        fig.update_layout(legend=dict(x=0, y=1))
         fig.update_layout(showlegend=True)
 
         st.plotly_chart(fig, use_container_width=True)
 
 
 def plot_airquality_heatmap(df_aqi, config):
-    aqicol1,aqicol2=st.columns([6,4])
+    aqicol1, aqicol2 = st.columns([6, 4])
     with aqicol1:
         year = st.slider(
             "Select a year",
@@ -158,7 +159,8 @@ def plot_airquality_heatmap(df_aqi, config):
             key="year2",
         )
     with aqicol2:
-        aqi_measurement_type2 = st.selectbox("Choose attibute to plot",
+        aqi_measurement_type2 = st.selectbox(
+            "Choose attibute to plot",
             [
                 "Days with AQI",
                 "Good Days",
@@ -182,7 +184,10 @@ def plot_airquality_heatmap(df_aqi, config):
 
     custom_agg2 = lambda x: x.max()
     fig = px.choropleth_mapbox(
-        df_aqi[df_aqi["Year"] == year].groupby("State")[aqi_measurement_type2].agg(**{aqi_measurement_type2: custom_agg2}).reset_index(),
+        df_aqi[df_aqi["Year"] == year]
+        .groupby("State")[aqi_measurement_type2]
+        .agg(**{aqi_measurement_type2: custom_agg2})
+        .reset_index(),
         geojson=config["geojson_data"],
         locations="State",
         featureidkey="properties.shapeName",
@@ -197,8 +202,7 @@ def plot_airquality_heatmap(df_aqi, config):
 
 def plot_airquality_metrics(df_aqi, config):
     st.subheader("Air Quality Metric plots")
-    aqi_tab1, aqi_tab2, aqi_tab3 = st.tabs(["Radio", "Heatmap","Line Plot"])
-
+    aqi_tab1, aqi_tab2, aqi_tab3 = st.tabs(["Radio", "Heatmap", "Line Plot"])
 
     with aqi_tab1:
         plot_airquality_radioplot(df_aqi)
@@ -206,6 +210,7 @@ def plot_airquality_metrics(df_aqi, config):
         plot_airquality_heatmap(df_aqi, config)
     with aqi_tab3:
         plot_airquality_lineplot(df_aqi)
+
 
 def plot_parallel_coords(df_aqi):
     with st.expander("**Expore data using parallel coords**"):
@@ -239,8 +244,6 @@ else:
 mapbox_layout = utils.mapbox_layout
 params = utils.params
 config = {"params": params, "geojson_data": geojson_data, "mapbox_layout": mapbox_layout}
-
-
 
 
 aqi_intro()

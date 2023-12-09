@@ -56,9 +56,11 @@ def conc_dataset_description():
         "State Name": "The name of the state where the monitoring site is located.",
         "County Name": "The name of the county where the monitoring site is situated.",
     }
-    ecol1,ecol2=st.columns([3, 6])
+    ecol1, ecol2 = st.columns([3, 6])
     with ecol1:
-        selected_column = st.selectbox("**Select a column to learn more about**", list(column_explanations.keys()),index=3)
+        selected_column = st.selectbox(
+            "**Select a column to learn more about**", list(column_explanations.keys()), index=3
+        )
     with ecol2:
         if selected_column:
             st.write("\n")
@@ -92,7 +94,9 @@ def conc_dataset_plot_missing_values(df, params):
 
     if filtered_df is not None and not filtered_df.empty:
         fig, ax = plt.subplots()
-        ax = sns.heatmap(filtered_df.isnull().T, cbar=True, cmap="Purples", vmin=0, vmax=1, xticklabels=False, yticklabels=True)
+        ax = sns.heatmap(
+            filtered_df.isnull().T, cbar=True, cmap="Purples", vmin=0, vmax=1, xticklabels=False, yticklabels=True
+        )
 
         ax.set_xlabel("Data Points")
         ax.set_title(f"Missing Values Heatmap for {parameter} in {selected_state}")
@@ -238,7 +242,6 @@ def perform_eda_of_conc_dataset():
         ["Correlation", "Missing Values", "Histogram", "State-wise", "Summary Statistics"]
     )
 
-
     with tab_conc1:
         conc_dataset_plot_corr_heatmap(df, numerical_columns)
 
@@ -253,6 +256,7 @@ def perform_eda_of_conc_dataset():
 
     with tab_conc5:
         st.table(df.describe())
+
 
 def aqi_dataset_description():
     st.write(
@@ -283,9 +287,11 @@ def aqi_dataset_description():
         "Days PM2.5": "The count of days when fine particulate matter (PM2.5) is a primary pollutant impacting air quality and the AQI.",
         "Days PM10": "The number of days when larger particulate matter (PM10) is a primary pollutant contributing to the AQI.",
     }
-    ecol3,ecol4=st.columns([3, 6])
+    ecol3, ecol4 = st.columns([3, 6])
     with ecol3:
-        selected_column = st.selectbox("**Select a column to learn more about**", list(column_explanations.keys()),index=3)
+        selected_column = st.selectbox(
+            "**Select a column to learn more about**", list(column_explanations.keys()), index=3
+        )
     with ecol4:
         if selected_column:
             st.write("\n")
@@ -421,6 +427,7 @@ def perform_eda_of_aqi_dataset():
 
     with tab_aqi5:
         st.table(df_aqi.describe())
+
 
 if "df" in st.session_state:
     df = st.session_state.df

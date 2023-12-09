@@ -31,4 +31,5 @@ Softwares/Frameworks: Pytorch, TensorFlow, sklearn, OpenCV, Streamlit, Flask
 #### Connect with Me
 I'm always open to connecting with like-minded individuals, professionals, and researchers. Feel free to reach out to me via [LinkedIn](https://www.linkedin.com/in/subramaniya-siva-t-s/), and let's explore the possibilities of collaboration and knowledge exchange!
 
-""")
+"""
+)
