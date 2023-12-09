@@ -121,16 +121,15 @@ def train_and_evaluate_model(df_aqi):
         Even thought the R-square is low for the above models, it is able to approximately grasp the general trend of AQI.
         """
         )   
-    return model
+    return model,feature_names
 
-def predict_on_new_data(model,df_aqi):
+def predict_on_new_data(model,df_aqi,feature_names):
     st.subheader("Precict AQI on custom data")
     st.write(
         f"""
     The below fields are prefilled with average values in USA. Try out different values for your location and get to know the Median AQI.
     """)
     predcol1,predcol2,predcol3=st.columns(3)
-
     with predcol1:
         days_co = st.number_input("Days of excess CO", min_value=0, max_value=365, value=int(np.mean(df_aqi["Days CO"])), step=5)
         days_no2 = st.number_input("Days of excess NO2", min_value=0, max_value=365, value=int(np.mean(df_aqi["Days NO2"])), step=5)
@@ -141,15 +140,22 @@ def predict_on_new_data(model,df_aqi):
         days_pm10 = st.number_input("Days of excess PM10", min_value=0, max_value=365, value=int(np.mean(df_aqi["Days PM10"])), step=5)
 
     # Create a DataFrame with user input
-    new_data = pd.DataFrame({
-        'Days CO': [days_co],
-        'Days NO2': [days_no2],
-        'Days Ozone': [days_ozone],
-        'Days PM2.5': [days_pm25],
-        'Days PM10': [days_pm10],
-        'Year': [2010],
-    })
+    new_dict=dict()
 
+    for feature_name in feature_names:
+        
+        if feature_name=="Days CO":
+            new_dict[feature_name]=[days_co]
+        elif feature_name=="Days NO2":
+            new_dict[feature_name]=[days_no2]
+        elif feature_name=="Days Ozone":
+            new_dict[feature_name]=[days_ozone]
+        elif feature_name=="Days PM2.5":
+            new_dict[feature_name]=[days_pm25]
+        elif feature_name=="Days PM10":  
+            new_dict[feature_name]=[days_pm10]
+    new_dict["Year"]=[2010]
+    new_data = pd.DataFrame(new_dict)
     new_predictions = model.predict(new_data)
     if new_predictions[0]<50:
         st.markdown(
@@ -183,8 +189,8 @@ def predict_on_new_data(model,df_aqi):
 
 def train_and_predict_model_for_aqi(df_aqi):
 
-    model=train_and_evaluate_model(df_aqi)
-    predict_on_new_data(model,df_aqi)
+    model,feature_names=train_and_evaluate_model(df_aqi)
+    predict_on_new_data(model,df_aqi,feature_names)
 
     
 
