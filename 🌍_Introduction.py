@@ -22,7 +22,7 @@ The goal of this webapp is to help users understand more about the air we breath
  
 """
 )
-st.image('images/air_image.jpg', use_column_width=True)
+st.image("images/air_image.jpg", use_column_width=True)
 
 
 st.subheader("Introduction")
