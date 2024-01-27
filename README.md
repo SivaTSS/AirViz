@@ -1,6 +1,6 @@
 # AirViz
 
-The goal of this webapp is to help users understand more about the air we breath.\
+The goal of this webapp is to help users understand more about the air we breath.
 
 Tryout the hosted version of this app [here](https://siva-airviz2.streamlit.app/)
 
@@ -12,11 +12,21 @@ Whether you're interested in studying long-term trends, assessing the effectiven
 
 
 ## Features
-The Iris dataset is a well-known dataset containing information about various species of iris flowers. The 3D plot below visualizes the relationship between sepal length, sepal width, and petal length, with different species represented by colors and petal width represented by marker size.
+Air quality is a critical aspect of our environment that directly impacts the health and well-being of individuals and the ecosystems we inhabit. It refers to the measurement of various pollutants and particulate matter in the atmosphere, which can have adverse effects on human health and the environment.
 
+### Geospacial Trends
 ![Streamlit App](images/layout.png)
 
-### Installation
+### Temporal Trends
+![Streamlit App](images/layout3.png)
+
+### Air quality metric plots
+![Streamlit App](images/layout2.png)
+
+### Forecasting Trends
+![Streamlit App](images/layout4.png)
+
+## Installation
 1. Clone the repo to local:
 ```shell
 git clone https://github.com/SivaTSS/AirViz.git
@@ -26,7 +36,7 @@ git clone https://github.com/SivaTSS/AirViz.git
 pip install -r requirements.txt
 ```
 
-### Usage
+## Usage
 On the terminal run the below command to launch streamlit:
 ```shell
 streamlit run 🌍_Introduction.py
